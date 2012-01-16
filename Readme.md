@@ -22,7 +22,8 @@ way to avoid developers rewrite from scratch what other developers have already 
 
 Install gems with _bundle install_ and execute _rake_ task, ember-mk  will be created on the _dist_ directory.
 
-Import the js and css files to your project.
+Import the js and css files to your project. 
+Also include move.js on your project.
 
 
 ##Examples

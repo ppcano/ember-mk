@@ -207,30 +207,15 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     if ( this.scrollOptions.vScroll ) {
 
       positionY = get(this, '_positionY');
-      this.animate({duration: duration}, function(me) {
 
-        move( me.id )
-          .y(positionY)
-          .duration(duration)
-          .end();
-
-      });
-
+      this.animate({duration: duration},{y:positionY}); 
 
     }
 
     if ( this.scrollOptions.hScroll ) {
 
       positionX = get(this, '_positionX');
-
-      this.animate({duration: duration}, function(me) {
-
-        move( me.id )
-          .x(positionX)
-          .duration(duration)
-          .end();
-
-      });
+      this.animate({duration: duration},{x:positionX}); 
 
     }
 
@@ -258,15 +243,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
       if ( newPositionY !== undefined ) {
 
-
-        this.animate({duration: this.scrollOptions.duration}, function(me) {
-
-          move( me.id )
-            .y(newPositionY)
-            .duration(me.scrollOptions.duration)
-            .end();
-
-        });
+        this.animate({duration: this.scrollOptions.duration}, {y: newPositionY}); 
 
         set(this,'_positionY', newPositionY);
 
@@ -287,16 +264,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
       if ( newPositionX !== undefined ) {
 
 
-        this.animate({duration: this.scrollOptions.duration}, function(me) {
-
-          move( me.id )
-            .x(newPositionX)
-            .duration(me.scrollOptions.duration)
-            .end();
-
-        });
-
-
+        this.animate({duration: this.scrollOptions.duration}, {x: newPositionX}); 
 
         set(this,'_positionX', newPositionX);
 

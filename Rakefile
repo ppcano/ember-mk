@@ -78,6 +78,7 @@ file "dist/ember-mk.min.js" => "dist/ember-mk.js" do
 end
 
 cp_r "packages/ember-mk/css/ember-mk.css", "dist/ember-mk.css", :verbose => false
+cp_r "examples/assets/move.js", "dist/move.js", :verbose => false
 
 
 
