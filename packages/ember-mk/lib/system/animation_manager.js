@@ -1,5 +1,5 @@
-var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
+//  improve lifecycle --> depending on Application?
 Mk.AnimationManager = Em.Object.create({
 
   content: Ember.A(),
@@ -54,6 +54,10 @@ Mk.AnimationManager = Em.Object.create({
       animation.options.delay = 0;
     }
 
+    if ( !animation.options.duration ) {
+      animation.options.duration = 0;
+    }
+
     var that = this;
 
     setTimeout(function(){
@@ -62,7 +66,7 @@ Mk.AnimationManager = Em.Object.create({
         that.stopEventHandling();
       }
 
-      animation.fn();
+      animation.fn( animation.view );
 
       setTimeout(function(){
 
@@ -71,7 +75,7 @@ Mk.AnimationManager = Em.Object.create({
 
         // OJO: testing think about, back animations can be immediately
         if ('function' == typeof animation.callback)
-          animation.callback();
+          animation.callback(animation.view);
 
         if ( !animation.options.immediately ) {
 

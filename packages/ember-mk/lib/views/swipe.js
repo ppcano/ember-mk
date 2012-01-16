@@ -191,31 +191,21 @@ Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
 
   move: function(next, fn) {
 
-		var id = this.get('elementId');
 		var width = this.get('width');
 
     var translatePosition = this.get('translatePosition');
 		translatePosition += (next) ? width*(-1): width;
 
+    this.animate({duration: this.duration, stopEventHandling:true},{x: translatePosition}, function(me) {
 
-    var that = this;
-    this.animate({duration: that.duration, stopEventHandling:true}, function() {
-
-      move('#'+id)
-        .x(translatePosition)
-        .duration(that.duration)
-        .end();
-
-    }, function() {
-
-        var activeLeftCss = that.get('activeLeftCss');
+        var activeLeftCss = me.get('activeLeftCss');
         var left, leftIndex, rightIndex, leftContentIndex, rightContentIndex;
 
-        var child = that.get('childViews');
-        var content = that.get('content');
+        var child = me.get('childViews');
+        var content = me.get('content');
 
-        leftIndex = that._getIndex(false);
-        rightIndex = that._getIndex(true);
+        leftIndex = me._getIndex(false);
+        rightIndex = me._getIndex(true);
 
         left = (activeLeftCss-1)*100+'%';
         child[leftIndex].$().css("left", left); 
@@ -223,13 +213,13 @@ Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
         left = (activeLeftCss+1)*100+'%';
         child[rightIndex].$().css("left", left); 
 
-        leftContentIndex = that._getContentIndex(false);
-        rightContentIndex = that._getContentIndex(true);
+        leftContentIndex = me._getContentIndex(false);
+        rightContentIndex = me._getContentIndex(true);
 
         set( child[leftIndex], 'content', content[leftContentIndex] );
         set( child[rightIndex], 'content', content[rightContentIndex] );
 
-        set(that, 'translatePosition', translatePosition);
+        set(me, 'translatePosition', translatePosition);
         if ( fn ) {
           fn();
         }

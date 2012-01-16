@@ -13,7 +13,8 @@ way to avoid developers rewrite from scratch what other developers have already 
 # Features
 
   - Modal, Swipe, Scroll and Tab Views.
-  - Animation Manager.
+  - Animation Manager: using AnimatableMixin ( animates either default
+    properties or own functions )
 
 # How to Run/Build
 
@@ -43,6 +44,6 @@ If you want to test against other ember/jquery/ember-touchs version, deployed th
 
 # TODO
 
-- Create own transform API to replace movejs.
+- Replace movejs dependency with own transform API. 
 - Require pattern
 - Rake command must concatenate css output

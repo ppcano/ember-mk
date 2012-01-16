@@ -2,7 +2,7 @@
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 
-Mk.ScrollMixin = Em.Mixin.create({
+Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
   scrollOptions: {
     hScroll: false,
@@ -207,22 +207,30 @@ Mk.ScrollMixin = Em.Mixin.create({
     if ( this.scrollOptions.vScroll ) {
 
       positionY = get(this, '_positionY');
-      move(this.id)
-        .y(positionY)
-        .duration(duration)
-        .end(function(){
-        });
+      this.animate({duration: duration}, function(me) {
+
+        move( me.id )
+          .y(positionY)
+          .duration(duration)
+          .end();
+
+      });
+
 
     }
 
     if ( this.scrollOptions.hScroll ) {
 
       positionX = get(this, '_positionX');
-      move(this.id)
-        .x(positionX)
-        .duration(duration)
-        .end(function(){
-        });
+
+      this.animate({duration: duration}, function(me) {
+
+        move( me.id )
+          .x(positionX)
+          .duration(duration)
+          .end();
+
+      });
 
     }
 
@@ -235,13 +243,12 @@ Mk.ScrollMixin = Em.Mixin.create({
     var maxHeight = this.get('_height') - this.get('_scrollableHeight');
     var maxWidth = this.get('_width') - this.get('_scrollableWidth');
 
-    var positionY = get(this, '_positionY')*(-1);
-    var positionX = get(this, '_positionX')*(-1);
 
-    var newPositionY = undefined;
-    var newPositionX = undefined;
 
     if ( this.scrollOptions.vScroll ) {
+
+      var positionY = get(this, '_positionY')*(-1);
+      var newPositionY = undefined;
 
       if ( maxHeight < 0 ||  positionY < 0) {
         newPositionY = 0;
@@ -251,12 +258,13 @@ Mk.ScrollMixin = Em.Mixin.create({
 
       if ( newPositionY !== undefined ) {
 
-        var that = this;
-        move(this.id)
-          .y(newPositionY)
-          .duration(this.scrollOptions.duration)
-          .end(function(){
 
+        this.animate({duration: this.scrollOptions.duration}, function(me) {
+
+          move( me.id )
+            .y(newPositionY)
+            .duration(me.scrollOptions.duration)
+            .end();
 
         });
 
@@ -267,6 +275,8 @@ Mk.ScrollMixin = Em.Mixin.create({
 
     if ( this.scrollOptions.hScroll ) {
 
+      var positionX = get(this, '_positionX')*(-1);
+      var newPositionX = undefined;
 
       if ( maxWidth < 0 ||  positionX < 0) {
         newPositionX = 0;
@@ -276,13 +286,17 @@ Mk.ScrollMixin = Em.Mixin.create({
 
       if ( newPositionX !== undefined ) {
 
-        var that = this;
-        move(this.id)
-          .x(newPositionX)
-          .duration(this.scrollOptions.duration)
-          .end(function(){
+
+        this.animate({duration: this.scrollOptions.duration}, function(me) {
+
+          move( me.id )
+            .x(newPositionX)
+            .duration(me.scrollOptions.duration)
+            .end();
 
         });
+
+
 
         set(this,'_positionX', newPositionX);
 

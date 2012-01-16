@@ -1,12 +1,11 @@
-var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 
-Mk.ModalView = Ember.Mixin.create({
+Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
   position: null,
   move: null,
   defaultHidden: true,
-  duration: '1s',
+  duration: 1000,
   animationStyle: Mk.AnimationStyle.FROM_RIGHT,
 
 
@@ -16,12 +15,12 @@ Mk.ModalView = Ember.Mixin.create({
 
     if ( this.defaultHidden ) {
 
-      set(this, 'isVisible', false);
+      this.set('isVisible', false);
 
       if ( this.animationStyle !== Mk.AnimationStyle.NONE ) {
 
-        var id = get( this, 'elementId');
         var position;
+        var val;
 
         if ( this._isHorizontalAnimation() ) {
 
@@ -33,18 +32,7 @@ Mk.ModalView = Ember.Mixin.create({
             position = position*(-1);
           }
 
-          var that = this;
-
-
-          move('#'+id)
-            .x(position)
-            .end(function(){
-
-              set(that, 'isVisible', true);
-              set(that, 'position', position);
-
-             });
-
+          val = {x: position};
 
         } else {
 
@@ -55,18 +43,20 @@ Mk.ModalView = Ember.Mixin.create({
             position = position*(-1);
           }
 
-          var that = this;
-
-          move('#'+id)
-            .y(position)
-            .end(function(){
-
-              set(that, 'isVisible', true);
-              set(that, 'position', position);
-
-             });
+          val = {y: position};
 
         }
+
+
+        this.animate({},val, function(me) {
+                   
+          me.set('isVisible', true);
+          me.set('position', position);
+
+        }); 
+
+
+
 
       }
 
@@ -78,8 +68,8 @@ Mk.ModalView = Ember.Mixin.create({
 
     if ( this.animationStyle !== Mk.AnimationStyle.NONE ) {
 
-      var id = get(this, 'elementId');
-      var position = get(this, 'position');
+      var position = this.get('position');
+      var val;
 
       position = ( position !== 0 ) ? 0 : this.move; 
 
@@ -87,29 +77,15 @@ Mk.ModalView = Ember.Mixin.create({
         position = position*(-1);
       }
 
+      var val = ( this._isHorizontalAnimation() ) ? {x: position}:{y: position};
 
-      if ( this._isHorizontalAnimation() ) {
-
-        move('#'+id)
-          .x(position)
-          .duration(this.duration)
-          .end();
-
-      } else {
-
-        move('#'+id)
-          .y(position)
-          .duration(this.duration)
-          .end();
-
-      }
-
-      set(this, 'position', position);
+      this.animate({duration: this.duration}, val );
+      this.set('position', position);
 
     } else {
 
-      var isVisible = get(this, 'isVisible'); 
-      set(this, 'isVisible', !isVisible);
+      var isVisible = this.get('isVisible'); 
+      this.set('isVisible', !isVisible);
 
     }
 

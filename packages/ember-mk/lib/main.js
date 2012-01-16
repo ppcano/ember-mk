@@ -1,5 +1,4 @@
 /*
-
 require('ember-mk/core');
 
 require('ember-mk/system/animation');

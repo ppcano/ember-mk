@@ -83,7 +83,6 @@ Em.View.reopen({
 
 (function(exports) {
 /*
-
 require('ember-mk/core');
 
 require('ember-mk/system/animation');
@@ -108,16 +107,87 @@ require('ember-mk/views/tab');
 
 (function(exports) {
 
-var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
-
+// Apply Mixin to your views.
+//
+// options: hash with following properties {duration, delay, stopEventHandling, immediately}
+//
+// animation can be: 
+// - function
+// - hash with properties: x, y
+//
+//
+// Example: 
+//
+//    this.animate({duration: duration}, function(me) {
+//
+//      move( me.id )
+//        .y(positionY)
+//        .duration(duration)
+//        .end();
+//
+//    });
 Mk.Animatable = Em.Mixin.create({
 
-  animate: function(options, fn, callback) {
+  animate: function(options, animation, callback) {
+
+    // TODO: That should be updated with an own API
+    // wrapping the api to movejs
+    if ('function' != typeof animation) {
+
+      var fn
+        , duration = options.duration || 0
+        , x = animation['x']
+        , y = animation['y'];
+
+      if ( x !== undefined && y !== undefined ) {
+
+        fn = function( me ) {
+
+          move('#'+ me.get('elementId') )
+            .x(x)
+            .y(y)
+            .duration(duration)
+            .end();
+
+        }
+
+      } else if ( x !== undefined ) {
+
+        fn = function( me ) {
+
+          move('#'+ me.get('elementId') )
+            .x(x)
+            .duration(duration)
+            .end();
+
+        }
+
+      } else if ( y !== undefined ) {
+
+        fn = function( me ) {
+
+          move('#'+ me.get('elementId') )
+            .y(y)
+            .duration(duration)
+            .end();
+
+        }
+
+      } else {
+
+        throw Error( 'animation is not valid');
+
+      }
+
+      animation = fn;
+
+    }
 
     var animation = Mk.Animation.create({
       options: options,
-      fn: fn,
-      callback: callback
+      fn: animation,
+      callback: callback,
+      view: this
     });
     Mk.AnimationManager.push( animation );
   }
@@ -187,7 +257,7 @@ Mk.ScalableMixin = Em.Mixin.create({
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 
-Mk.ScrollMixin = Em.Mixin.create({
+Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
   scrollOptions: {
     hScroll: false,
@@ -392,22 +462,30 @@ Mk.ScrollMixin = Em.Mixin.create({
     if ( this.scrollOptions.vScroll ) {
 
       positionY = get(this, '_positionY');
-      move(this.id)
-        .y(positionY)
-        .duration(duration)
-        .end(function(){
-        });
+      this.animate({duration: duration}, function(me) {
+
+        move( me.id )
+          .y(positionY)
+          .duration(duration)
+          .end();
+
+      });
+
 
     }
 
     if ( this.scrollOptions.hScroll ) {
 
       positionX = get(this, '_positionX');
-      move(this.id)
-        .x(positionX)
-        .duration(duration)
-        .end(function(){
-        });
+
+      this.animate({duration: duration}, function(me) {
+
+        move( me.id )
+          .x(positionX)
+          .duration(duration)
+          .end();
+
+      });
 
     }
 
@@ -420,13 +498,12 @@ Mk.ScrollMixin = Em.Mixin.create({
     var maxHeight = this.get('_height') - this.get('_scrollableHeight');
     var maxWidth = this.get('_width') - this.get('_scrollableWidth');
 
-    var positionY = get(this, '_positionY')*(-1);
-    var positionX = get(this, '_positionX')*(-1);
 
-    var newPositionY = undefined;
-    var newPositionX = undefined;
 
     if ( this.scrollOptions.vScroll ) {
+
+      var positionY = get(this, '_positionY')*(-1);
+      var newPositionY = undefined;
 
       if ( maxHeight < 0 ||  positionY < 0) {
         newPositionY = 0;
@@ -436,12 +513,13 @@ Mk.ScrollMixin = Em.Mixin.create({
 
       if ( newPositionY !== undefined ) {
 
-        var that = this;
-        move(this.id)
-          .y(newPositionY)
-          .duration(this.scrollOptions.duration)
-          .end(function(){
 
+        this.animate({duration: this.scrollOptions.duration}, function(me) {
+
+          move( me.id )
+            .y(newPositionY)
+            .duration(me.scrollOptions.duration)
+            .end();
 
         });
 
@@ -452,6 +530,8 @@ Mk.ScrollMixin = Em.Mixin.create({
 
     if ( this.scrollOptions.hScroll ) {
 
+      var positionX = get(this, '_positionX')*(-1);
+      var newPositionX = undefined;
 
       if ( maxWidth < 0 ||  positionX < 0) {
         newPositionX = 0;
@@ -461,13 +541,17 @@ Mk.ScrollMixin = Em.Mixin.create({
 
       if ( newPositionX !== undefined ) {
 
-        var that = this;
-        move(this.id)
-          .x(newPositionX)
-          .duration(this.scrollOptions.duration)
-          .end(function(){
+
+        this.animate({duration: this.scrollOptions.duration}, function(me) {
+
+          move( me.id )
+            .x(newPositionX)
+            .duration(me.scrollOptions.duration)
+            .end();
 
         });
+
+
 
         set(this,'_positionX', newPositionX);
 
@@ -496,10 +580,12 @@ Mk.ScrollMixin = Em.Mixin.create({
 
 (function(exports) {
 
+
 Mk.Animation = Em.Object.extend({
   options: null, //{duration, delay, stopEventHandling, immediately}}  
   fn: null,
   callback: null, 
+  view: null, 
 
   init: function(){
     this._super();
@@ -510,8 +596,8 @@ Mk.Animation = Em.Object.extend({
 })({});
 
 (function(exports) {
-var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
+//  improve lifecycle --> depending on Application?
 Mk.AnimationManager = Em.Object.create({
 
   content: Ember.A(),
@@ -566,6 +652,10 @@ Mk.AnimationManager = Em.Object.create({
       animation.options.delay = 0;
     }
 
+    if ( !animation.options.duration ) {
+      animation.options.duration = 0;
+    }
+
     var that = this;
 
     setTimeout(function(){
@@ -574,7 +664,7 @@ Mk.AnimationManager = Em.Object.create({
         that.stopEventHandling();
       }
 
-      animation.fn();
+      animation.fn( animation.view );
 
       setTimeout(function(){
 
@@ -583,7 +673,7 @@ Mk.AnimationManager = Em.Object.create({
 
         // OJO: testing think about, back animations can be immediately
         if ('function' == typeof animation.callback)
-          animation.callback();
+          animation.callback(animation.view);
 
         if ( !animation.options.immediately ) {
 
@@ -615,15 +705,14 @@ Mk.AnimationStyle = {
 })({});
 
 (function(exports) {
-var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 
-Mk.ModalView = Ember.Mixin.create({
+Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
   position: null,
   move: null,
   defaultHidden: true,
-  duration: '1s',
+  duration: 1000,
   animationStyle: Mk.AnimationStyle.FROM_RIGHT,
 
 
@@ -633,12 +722,12 @@ Mk.ModalView = Ember.Mixin.create({
 
     if ( this.defaultHidden ) {
 
-      set(this, 'isVisible', false);
+      this.set('isVisible', false);
 
       if ( this.animationStyle !== Mk.AnimationStyle.NONE ) {
 
-        var id = get( this, 'elementId');
         var position;
+        var val;
 
         if ( this._isHorizontalAnimation() ) {
 
@@ -650,18 +739,7 @@ Mk.ModalView = Ember.Mixin.create({
             position = position*(-1);
           }
 
-          var that = this;
-
-
-          move('#'+id)
-            .x(position)
-            .end(function(){
-
-              set(that, 'isVisible', true);
-              set(that, 'position', position);
-
-             });
-
+          val = {x: position};
 
         } else {
 
@@ -672,18 +750,20 @@ Mk.ModalView = Ember.Mixin.create({
             position = position*(-1);
           }
 
-          var that = this;
-
-          move('#'+id)
-            .y(position)
-            .end(function(){
-
-              set(that, 'isVisible', true);
-              set(that, 'position', position);
-
-             });
+          val = {y: position};
 
         }
+
+
+        this.animate({},val, function(me) {
+                   
+          me.set('isVisible', true);
+          me.set('position', position);
+
+        }); 
+
+
+
 
       }
 
@@ -695,8 +775,8 @@ Mk.ModalView = Ember.Mixin.create({
 
     if ( this.animationStyle !== Mk.AnimationStyle.NONE ) {
 
-      var id = get(this, 'elementId');
-      var position = get(this, 'position');
+      var position = this.get('position');
+      var val;
 
       position = ( position !== 0 ) ? 0 : this.move; 
 
@@ -704,29 +784,15 @@ Mk.ModalView = Ember.Mixin.create({
         position = position*(-1);
       }
 
+      var val = ( this._isHorizontalAnimation() ) ? {x: position}:{y: position};
 
-      if ( this._isHorizontalAnimation() ) {
-
-        move('#'+id)
-          .x(position)
-          .duration(this.duration)
-          .end();
-
-      } else {
-
-        move('#'+id)
-          .y(position)
-          .duration(this.duration)
-          .end();
-
-      }
-
-      set(this, 'position', position);
+      this.animate({duration: this.duration}, val );
+      this.set('position', position);
 
     } else {
 
-      var isVisible = get(this, 'isVisible'); 
-      set(this, 'isVisible', !isVisible);
+      var isVisible = this.get('isVisible'); 
+      this.set('isVisible', !isVisible);
 
     }
 
@@ -968,31 +1034,21 @@ Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
 
   move: function(next, fn) {
 
-		var id = this.get('elementId');
 		var width = this.get('width');
 
     var translatePosition = this.get('translatePosition');
 		translatePosition += (next) ? width*(-1): width;
 
+    this.animate({duration: this.duration, stopEventHandling:true},{x: translatePosition}, function(me) {
 
-    var that = this;
-    this.animate({duration: that.duration, stopEventHandling:true}, function() {
-
-      move('#'+id)
-        .x(translatePosition)
-        .duration(that.duration)
-        .end();
-
-    }, function() {
-
-        var activeLeftCss = that.get('activeLeftCss');
+        var activeLeftCss = me.get('activeLeftCss');
         var left, leftIndex, rightIndex, leftContentIndex, rightContentIndex;
 
-        var child = that.get('childViews');
-        var content = that.get('content');
+        var child = me.get('childViews');
+        var content = me.get('content');
 
-        leftIndex = that._getIndex(false);
-        rightIndex = that._getIndex(true);
+        leftIndex = me._getIndex(false);
+        rightIndex = me._getIndex(true);
 
         left = (activeLeftCss-1)*100+'%';
         child[leftIndex].$().css("left", left); 
@@ -1000,13 +1056,13 @@ Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
         left = (activeLeftCss+1)*100+'%';
         child[rightIndex].$().css("left", left); 
 
-        leftContentIndex = that._getContentIndex(false);
-        rightContentIndex = that._getContentIndex(true);
+        leftContentIndex = me._getContentIndex(false);
+        rightContentIndex = me._getContentIndex(true);
 
         set( child[leftIndex], 'content', content[leftContentIndex] );
         set( child[rightIndex], 'content', content[rightContentIndex] );
 
-        set(that, 'translatePosition', translatePosition);
+        set(me, 'translatePosition', translatePosition);
         if ( fn ) {
           fn();
         }
