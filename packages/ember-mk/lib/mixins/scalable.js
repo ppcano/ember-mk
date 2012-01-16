@@ -1,4 +1,6 @@
 
+// This mixin is a first attempt to create UIs which scales on multiple screens, based on
+// screen dimensions
 Mk.ScalableMixin = Em.Mixin.create({
   // properties
   height: null,
@@ -14,9 +16,6 @@ Mk.ScalableMixin = Em.Mixin.create({
     
     //var wHeight = window.innerHeight;
     var wHeight = window.outerHeight;
-
-    if ( wHeight < 460 ) 
-      wHeight = 460;
 
     var view
       , css

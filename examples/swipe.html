@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/common.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ios.css" type="text/css" media="screen">
+
+    <script type="text/javascript" src="assets/minispade.js"></script>
+    <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="assets/move.js"></script>
+
+    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-touch.js"></script>
+
+    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
+    <script type="text/javascript" src="source/ember-mk.js"></script>
+    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
+
+
+    <script type="text/javascript">
+    touchMove = function(event) {
+      event.preventDefault();
+    }
+    </script>
+
+    <style type="text/css" media="all">
+
+      .greenbg{
+        background-color:green; 
+      }
+
+      .sw_content {
+        position: relative; 
+      }
+
+      .sw_photo {
+
+        position: relative; 
+        left: 10%;
+        width: 80%;  
+
+        background-color:red; 
+
+      }
+
+      .sw_info {
+
+        position: relative; 
+        left: 10%;
+        width: 80%;  
+        background-color:blue; 
+
+      }
+
+
+
+    </style>
+
+  </head>
+
+</head>
+<body ontouchmove="touchMove(event);">
+
+
+  <div id="header">
+  </div>
+
+  <div class="content">
+
+    <script type="text/x-handlebars">
+			{{#view Mk.SwipeView 
+					content="swipe_items" 
+					itemViewClass="App.SwipeItemView" }}
+			{{/view}}
+    </script>
+
+  </div>
+
+  <div id="footer">
+  </div>
+
+<script type="text/javascript">
+
+var swipe_items = [];
+swipe_items.push( Em.Object.create( {green: true} ) );
+swipe_items.push( Em.Object.create( {green: false} ) );
+swipe_items.push( Em.Object.create( {green: true} ) );
+swipe_items.push( Em.Object.create( {green: false} ) );
+swipe_items.push( Em.Object.create( {green: true} ) );
+swipe_items.push( Em.Object.create( {green: false} ) );
+
+
+App = Em.Application.create({
+});
+
+
+App.SwipeItemView = Em.ContainerView.extend({
+  classNameBindings: ['greenbg'],
+  childViews: ['child'],
+
+  greenbg: Ember.computed(function() {
+
+    var content = this.get('content');
+    return (content) ? content.get('green'): false;
+    
+  }).property('content.green'),
+
+  child: Em.ContainerView.extend( Mk.ScrollMixin, Mk.ScalableMixin,  {
+
+    margin_top: 0.05,
+    hScroll: false,
+    classNames: ['sw_content'],
+    childViews: ['photo', 'info1', 'info2'],
+
+    photo: Em.View.extend(Mk.ScalableMixin, {
+      height: 0.8,
+      classNames: ['sw_photo']
+
+    }),
+
+    info1: Em.View.extend(Mk.ScalableMixin, {
+
+      margin_top: 0.05,
+      height: 0.2,
+      classNames: ['sw_info']
+
+    }),
+
+    info2: Em.View.extend(Mk.ScalableMixin, {
+
+      margin_top: 0.05,
+      height: 0.2,
+      classNames: ['sw_info']
+
+    })
+
+  })
+
+});
+
+
+
+
+</script>
+
+</body>
+</html>

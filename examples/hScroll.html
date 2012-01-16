@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <title></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/common.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ios.css" type="text/css" media="screen">
+
+    <script type="text/javascript" src="assets/minispade.js"></script>
+    <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="assets/move.js"></script>
+
+    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-touch.js"></script>
+
+    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
+    <script type="text/javascript" src="source/ember-mk.js"></script>
+    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
+
+
+    <script type="text/javascript">
+    touchMove = function(event) {
+      event.preventDefault();
+    }
+    </script>
+
+    <style type="text/css" media="all">
+
+      #carousel_content {
+
+        position:absolute; z-index:1;
+        top:10px; 
+        left: 20%;
+        height: 200px;
+        width: 200px;
+        background:green;
+        overflow: hidden;
+
+      }
+
+      .carousel_collection {
+
+        background:red;
+        list-style: none;
+        height:100%;
+      }
+
+      .carousel_collection > li {
+        float: left;
+      }
+
+      .main_img {
+        /*margin-right: 10px;*/
+        height: 200px; 
+        width: 200px;
+      }
+
+    </style>
+
+  </head>
+
+</head>
+<body ontouchmove="touchMove(event);">
+
+  <div id="header">
+  </div>
+
+
+  <div class="content">
+    <div id="carousel_content">
+      <script type="text/x-handlebars">
+
+        {{#collection App.CarouselView 
+              contentBinding="App.Images" }}
+          <img class="main_img" {{bindAttr src="content.img"}} ></img>
+        {{/collection}}
+
+      </script>
+    </div>
+  </div>
+
+  <div id="footer">
+  </div>
+
+<script type="text/javascript">
+
+var images = [];
+images.push( Em.Object.create( {img: 'images/pic01.jpg'} ) );
+images.push( Em.Object.create( {img: 'images/pic02.jpg'} ) );
+images.push( Em.Object.create( {img: 'images/pic03.jpg'} ) );
+images.push( Em.Object.create( {img: 'images/pic04.jpg'} ) );
+images.push( Em.Object.create( {img: 'images/pic05.jpg'} ) );
+images.push( Em.Object.create( {img: 'images/pic06.jpg'} ) );
+
+App = Em.Application.create({
+});
+App.Images = images;
+
+
+App.CarouselView = Em.CollectionView.extend( Mk.ScrollMixin, {
+    
+    scrollOptions: {
+      hScroll: true,
+      vScroll: false,
+      duration: 500,
+      velocity: 0.1,
+      simultaneously: true,
+      initThreshold: 10
+    },
+
+    tagName: "ul",
+    classNames: ['carousel_collection'],
+
+
+    didInsertElement: function() {
+
+      var parentWidth = this.$().parent().outerWidth(true);
+      var content = this.get('content');
+
+      //console.log( this.$().parent() );
+      //console.log( 'width: --->  ' + parentWidth);
+
+      var width = content.length*parentWidth;
+
+      this.$().width(width);
+      this.set('_width', width); // for scrolling
+
+      this._super();
+
+    }
+
+});
+
+
+</script>
+
+</body>
+</html>

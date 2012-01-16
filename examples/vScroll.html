@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+
+  <title></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/common.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ios.css" type="text/css" media="screen">
+
+    <script type="text/javascript" src="assets/minispade.js"></script>
+    <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="assets/move.js"></script>
+
+    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-touch.js"></script>
+
+    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
+    <script type="text/javascript" src="source/ember-mk.js"></script>
+    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
+
+
+    <script type="text/javascript">
+    touchMove = function(event) {
+      event.preventDefault();
+    }
+    </script>
+
+    <style type="text/css" media="all">
+
+        #vlist {
+          position:relative;
+          list-style:none;
+          padding:0;
+          margin:0;
+          width:100%;
+          text-align:left;
+
+        }
+
+        #vlist li {
+
+          padding:0 10px;
+          height:100px;
+          width: 100%;
+          line-height:100px;
+          border-bottom:1px solid #ccc;
+          border-top:1px solid #fff;
+          background-color:#fafafa;
+
+        }
+
+    </style>
+
+  </head>
+
+</head>
+<body ontouchmove="touchMove(event);">
+
+  <div id="header">
+  </div>
+
+
+  <script type="text/x-handlebars">
+
+    {{#view Em.View class="content" }}
+
+      {{#collection App.CollectionView 
+          elementId="vlist"
+          contentBinding="App.Items"
+          tagName="ul"}}
+
+          {{content.name}}
+
+      {{/collection}}
+
+    {{/view}}
+
+  </script>
+
+  <div id="footer">
+  </div>
+
+<script type="text/javascript">
+
+var items = [];
+for(var i=0; i< 100; i++) {
+  items.push( Ember.Object.create({name: i + ' item', id: i }) );
+}
+
+
+App = Em.Application.create({
+});
+
+App.CollectionView = Em.CollectionView.extend(Mk.ScrollMixin, {
+
+  scrollOptions: {
+    hScroll: false,
+    vScroll: true,
+    duration: 750,
+    velocity: 0.05,
+    simultaneously: false,
+    initThreshold: 10
+  }
+    
+});
+App.Items = items;
+
+
+</script>
+
+</body>
+</html>

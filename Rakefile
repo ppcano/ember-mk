@@ -51,6 +51,8 @@ end
 
 task :build => ["ember:mk"]
 
+
+
 file "dist/ember-mk.js" => :build do
   puts "Generating ember-mk.js"
 
@@ -59,6 +61,7 @@ file "dist/ember-mk.js" => :build do
   File.open("dist/ember-mk.js", "w") do |file|
     file.puts strip_require("tmp/static/ember-mk.js")
   end
+
 end
 
 # Minify dist/ember-mk.js to dist/ember-mk.min.js
@@ -73,6 +76,10 @@ file "dist/ember-mk.min.js" => "dist/ember-mk.js" do
     file.puts uglify("dist/ember-mk.js")
   end
 end
+
+cp_r "packages/ember-mk/css/ember-mk.css", "dist/ember-mk.css", :verbose => false
+
+
 
 desc "Clean build artifacts from previous builds"
 task :clean do

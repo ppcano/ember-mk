@@ -12,7 +12,7 @@ way to avoid developers rewrite from scratch what other developers have already 
 
 # Features
 
-  - Modal, Swipe and Tab Views.
+  - Modal, Swipe, Scroll and Tab Views.
   - Animation Manager.
 
 # How to Run/Build
@@ -20,7 +20,8 @@ way to avoid developers rewrite from scratch what other developers have already 
 ## Building Ember-mk
 
 Install gems with _bundle install_ and execute _rake_ task, ember-mk  will be created on the _dist_ directory.
-Import the file to your project, on the correct order.
+
+Import the js and css files to your project.
 
 
 ##Examples
@@ -43,4 +44,5 @@ If you want to test against other ember/jquery/ember-touchs version, deployed th
 # TODO
 
 - Create own transform API to replace movejs.
-- Not implemented require pattern
+- Require pattern
+- Rake command must concatenate css output

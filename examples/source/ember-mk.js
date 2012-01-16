@@ -1,5 +1,10 @@
 
-minispade.register('ember-mk/initializers/event_dispatcher', function(exports) {
+(function(exports) {
+window.Mk = Ember.Namespace.create();
+
+})({});
+
+(function(exports) {
 
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
@@ -39,9 +44,9 @@ Ember.EventDispatcher.reopen({
 });
 
 
-});
+})({});
 
-minispade.register('ember-mk/initializers/view', function(exports) {
+(function(exports) {
 
 Em.View.reopen({
 
@@ -74,13 +79,34 @@ Em.View.reopen({
 });
 
 
-});
+})({});
 
-minispade.register('ember-mk/main', function(exports) {
+(function(exports) {
+/*
 
-});
+require('ember-mk/core');
 
-minispade.register('ember-mk/mixins/animatable', function(exports) {
+require('ember-mk/system/animation');
+require('ember-mk/system/animation_style');
+require('ember-mk/system/animation_manager');
+
+require('ember-mk/initializers/event_dispatcher');
+require('ember-mk/initializers/view');
+
+
+require('ember-mk/mixins/animatable');
+require('ember-mk/mixins/scalable');
+require('ember-mk/mixins/scroll');
+
+
+require('ember-mk/views/modal');
+require('ember-mk/views/swipe');
+require('ember-mk/views/tab');
+*/
+
+})({});
+
+(function(exports) {
 
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
@@ -93,15 +119,17 @@ Mk.Animatable = Em.Mixin.create({
       fn: fn,
       callback: callback
     });
-    Em.AnimationManager.push( animation );
+    Mk.AnimationManager.push( animation );
   }
 
 });
 
-});
+})({});
 
-minispade.register('ember-mk/mixins/scalable', function(exports) {
+(function(exports) {
 
+// This mixin is a first attempt to create UIs which scales on multiple screens, based on
+// screen dimensions
 Mk.ScalableMixin = Em.Mixin.create({
   // properties
   height: null,
@@ -117,9 +145,6 @@ Mk.ScalableMixin = Em.Mixin.create({
     
     //var wHeight = window.innerHeight;
     var wHeight = window.outerHeight;
-
-    if ( wHeight < 460 ) 
-      wHeight = 460;
 
     var view
       , css
@@ -155,9 +180,9 @@ Mk.ScalableMixin = Em.Mixin.create({
 });
 
 
-});
+})({});
 
-minispade.register('ember-mk/mixins/scroll', function(exports) {
+(function(exports) {
 
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
@@ -467,9 +492,9 @@ Mk.ScrollMixin = Em.Mixin.create({
 
 });
 
-});
+})({});
 
-minispade.register('ember-mk/system/animation', function(exports) {
+(function(exports) {
 
 Mk.Animation = Em.Object.extend({
   options: null, //{duration, delay, stopEventHandling, immediately}}  
@@ -482,9 +507,9 @@ Mk.Animation = Em.Object.extend({
 
 });
 
-});
+})({});
 
-minispade.register('ember-mk/system/animation_manager', function(exports) {
+(function(exports) {
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 Mk.AnimationManager = Em.Object.create({
@@ -576,9 +601,9 @@ Mk.AnimationManager = Em.Object.create({
 });
 
 
-});
+})({});
 
-minispade.register('ember-mk/system/animation_style', function(exports) {
+(function(exports) {
 Mk.AnimationStyle = {
   FROM_DOWN: 0
   , FROM_UP: 1
@@ -587,15 +612,9 @@ Mk.AnimationStyle = {
   , NONE: 4
 };
 
-});
+})({});
 
-minispade.register('ember-mk/system/namespace', function(exports) {
-Mk = {};
-
-
-});
-
-minispade.register('ember-mk/views/modal', function(exports) {
+(function(exports) {
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 
@@ -753,15 +772,14 @@ Mk.ModalViewButton = Em.View.extend({
 
 
 
-});
+})({});
 
-minispade.register('ember-mk/views/swipe', function(exports) {
-
+(function(exports) {
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 /* Based on SwipeView approach of Matteo Spinelli
  */
-Mk.SwipeView = Ember.ContainerView.extend(Em.Animatable,{
+Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
   
   itemViewClass: Em.View,
 
@@ -996,42 +1014,6 @@ Mk.SwipeView = Ember.ContainerView.extend(Em.Animatable,{
 
     });
 
-/*
-		move('#'+id)
-			.x(translatePosition)
-			.duration(that.duration)
-			.end( function() {
-        
-        // update Left Css on Left/Right Pages
-        var activeLeftCss = that.get('activeLeftCss');
-        var left, leftIndex, rightIndex, leftContentIndex, rightContentIndex;
-
-        var child = that.get('childViews');
-        var content = that.get('content');
-
-        leftIndex = that._getIndex(false);
-        rightIndex = that._getIndex(true);
-
-        left = (activeLeftCss-1)*100+'%';
-        child[leftIndex].$().css("left", left); 
-
-        left = (activeLeftCss+1)*100+'%';
-        child[rightIndex].$().css("left", left); 
-
-        leftContentIndex = that._getContentIndex(false);
-        rightContentIndex = that._getContentIndex(true);
-
-        set( child[leftIndex], 'content', content[leftContentIndex] );
-        set( child[rightIndex], 'content', content[rightContentIndex] );
-
-        set(that, 'translatePosition', translatePosition);
-        if ( fn ) {
-          fn();
-        }
-
-			});
-
-    */
   },
 
   _getIndex: function( next ) {
@@ -1075,24 +1057,21 @@ Mk.SwipeView = Ember.ContainerView.extend(Em.Animatable,{
 });
 
 
-});
+})({});
 
-minispade.register('ember-mk/views/tab', function(exports) {
+(function(exports) {
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 /*
  * Using left property because:
  *  - isVisible: won't work on scrolling context.
- *  - visibility: hidden, does not perform well. 
+ *  - visibility: hidden, does not render correctly panes on change. 
  */
 Mk.TabMainView = Ember.View.extend({
 
   controller: null,
   panes: {},
 
-  init: function() {
-    this._super();
-  },
 
   willInsertElement: function() {
 
@@ -1121,6 +1100,7 @@ Mk.TabMainView = Ember.View.extend({
   },
 
   didInsertElement: function() {
+
     this._super(); 
     this.observesCurrentView();
   },
@@ -1153,6 +1133,7 @@ Mk.TabMainView = Ember.View.extend({
 });
 
 Mk.TabPaneView = Ember.View.extend({
+  classNames: ['tab_pane']
 
 });
 
@@ -1174,4 +1155,4 @@ Mk.TabView = Ember.View.extend({
 });
 
 
-});
+})({});

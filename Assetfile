@@ -1,6 +1,16 @@
 LICENSE = File.read("generators/license.js")
 
 
+class RegisterLibWrapper < Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      id = input.path.sub('/lib/','/').sub(/\.js$/, '')
+      code = "\n(function(exports) {\n#{input.read}\n})({});\n"
+      output.write code
+    end
+  end
+end
+
 class RegisterWrapper < Filter
   def generate_output(inputs, output)
     inputs.each do |input|
@@ -32,14 +42,20 @@ end
 input "packages"
 output "examples/source"
 
+match "*/tests/**/*.js" do
+  filter RegisterWrapper
+  filter RequireRewrite
+  filter ConcatFilter, "ember-mk-tests.js"
+end
 
-match "*/{lib,tests}/**/*.js" do
-  filter RegisterWrapper # used to select a specific test to be run
-#  filter RequireRewrite
-  filter ConcatFilter do |filename|
-    filename =~ %r{/tests/} ? "ember-mk-tests.js" : "ember-mk.js"
+match "*/css/*.css" do
+  filter ConcatFilter, "ember-mk.css"
+end
 
-  end
+match "*/lib/**/*.js" do
+  filter RegisterLibWrapper
+  #filter RequireRewrite
+  filter ConcatFilter, "ember-mk.js"
 end
 
 

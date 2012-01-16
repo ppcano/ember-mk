@@ -3,16 +3,13 @@ var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.
 /*
  * Using left property because:
  *  - isVisible: won't work on scrolling context.
- *  - visibility: hidden, does not perform well. 
+ *  - visibility: hidden, does not render correctly panes on change. 
  */
 Mk.TabMainView = Ember.View.extend({
 
   controller: null,
   panes: {},
 
-  init: function() {
-    this._super();
-  },
 
   willInsertElement: function() {
 
@@ -41,6 +38,7 @@ Mk.TabMainView = Ember.View.extend({
   },
 
   didInsertElement: function() {
+
     this._super(); 
     this.observesCurrentView();
   },
@@ -73,6 +71,7 @@ Mk.TabMainView = Ember.View.extend({
 });
 
 Mk.TabPaneView = Ember.View.extend({
+  classNames: ['tab_pane']
 
 });
 

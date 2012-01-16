@@ -1,9 +1,8 @@
-
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 /* Based on SwipeView approach of Matteo Spinelli
  */
-Mk.SwipeView = Ember.ContainerView.extend(Em.Animatable,{
+Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
   
   itemViewClass: Em.View,
 
@@ -238,42 +237,6 @@ Mk.SwipeView = Ember.ContainerView.extend(Em.Animatable,{
 
     });
 
-/*
-		move('#'+id)
-			.x(translatePosition)
-			.duration(that.duration)
-			.end( function() {
-        
-        // update Left Css on Left/Right Pages
-        var activeLeftCss = that.get('activeLeftCss');
-        var left, leftIndex, rightIndex, leftContentIndex, rightContentIndex;
-
-        var child = that.get('childViews');
-        var content = that.get('content');
-
-        leftIndex = that._getIndex(false);
-        rightIndex = that._getIndex(true);
-
-        left = (activeLeftCss-1)*100+'%';
-        child[leftIndex].$().css("left", left); 
-
-        left = (activeLeftCss+1)*100+'%';
-        child[rightIndex].$().css("left", left); 
-
-        leftContentIndex = that._getContentIndex(false);
-        rightContentIndex = that._getContentIndex(true);
-
-        set( child[leftIndex], 'content', content[leftContentIndex] );
-        set( child[rightIndex], 'content', content[rightContentIndex] );
-
-        set(that, 'translatePosition', translatePosition);
-        if ( fn ) {
-          fn();
-        }
-
-			});
-
-    */
   },
 
   _getIndex: function( next ) {

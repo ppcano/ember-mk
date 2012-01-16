@@ -10,7 +10,7 @@ Mk.Animatable = Em.Mixin.create({
       fn: fn,
       callback: callback
     });
-    Em.AnimationManager.push( animation );
+    Mk.AnimationManager.push( animation );
   }
 
 });

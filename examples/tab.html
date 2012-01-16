@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/common.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ios.css" type="text/css" media="screen">
+
+    <script type="text/javascript" src="assets/minispade.js"></script>
+    <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="assets/move.js"></script>
+
+    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-touch.js"></script>
+
+    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
+    <script type="text/javascript" src="source/ember-mk.js"></script>
+    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
+
+    <script type="text/javascript">
+    touchMove = function(event) {
+      event.preventDefault();
+    }
+    </script>
+
+    <style type="text/css" media="all">
+
+      #footer .selected {
+        background-color:red;
+      }
+
+      #footer li {
+        float: left;
+        width:25%;
+        height: 100%;
+      }
+
+
+      .tab_main {
+
+        position:absolute; z-index:1;
+        top:45px; bottom:0px; left:0;
+        width:100%;
+        background:#555;
+        /*overflow:auto;*/
+
+        overflow-x: hidden; 
+        overflow-y: hidden;
+      }
+
+
+      .tab_pane > div {
+        height:100%;
+        width:100%;
+      }
+
+    </style>
+
+  </head>
+
+</head>
+<body ontouchmove="touchMove(event);">
+
+  <div id="header">
+  </div>
+
+<script type="text/x-handlebars">
+
+{{#view Mk.TabMainView class="tab_main" currentView="pane1"}}
+
+	{{#view Mk.TabPaneView id="pane1" viewName="pane1"}}
+    <div style="background-color: red;">
+    </div>
+
+	{{/view}}
+
+	{{#view Mk.TabPaneView id="pane2" viewName="pane2"}}
+
+
+    <div style="background-color: blue;">
+    </div>
+
+	{{/view}}
+
+	{{#view Mk.TabPaneView id="pane3" viewName="pane3"}}
+
+    <div style="background-color: brown;">
+    </div>
+
+	{{/view}}
+
+	{{#view Mk.TabPaneView id="pane4" viewName="pane4"}}
+
+	{{/view}}
+
+<ul id="footer">
+		{{#view App.SelectedTabView tagName="li" id="tab1" value="pane1"}}Carousel{{/view}}
+		{{#view App.SelectedTabView tagName="li" id="tab2" value="pane2"}}List{{/view}}
+		{{#view App.SelectedTabView tagName="li" id="tab3" value="pane3"}}ImageSlider{{/view}}
+		{{#view App.SelectedTabView tagName="li" id="tab4" value="pane4"}}Slider{{/view}}
+</ul>
+
+{{/view}}
+
+</script>
+
+<script type="text/javascript">
+
+  App = Em.Application.create({
+  });
+
+  App.SelectedTabView = Mk.TabView.extend({
+
+    classNameBindings: ['selected'],
+
+    selected: Ember.computed(function(){
+      return ( Ember.getPath(this, 'tabsContainer.currentView') === this.get('value') );
+
+    }).property('tabsContainer.currentView')
+
+  });
+
+
+</script>
+
+</body>
+</html>

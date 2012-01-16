@@ -1,0 +1,148 @@
+
+        /* Bordered Button Styles */
+        .bordered {
+            -webkit-box-shadow: 0 1px 1px #9aa5bb, 0 -1px 1px #8e96a5; 
+            border: solid 1px #54617d;
+            border-color: #484e59 #54617d #4c5c7a #54617d; 
+            display: inline-block;
+            cursor: pointer;
+            padding: 0px 10px;
+            font-size: 12px;
+            line-height: 28px;
+            height: 30px;
+            margin-top: 1px;
+            -webkit-box-sizing: border-box;
+            -webkit-border-radius: 5px;
+            background-image: 
+                -webkit-gradient(linear, left top, left bottom, 
+                    from(#92a1bf), 
+                    color-stop(0.25, #798aad),
+                    color-stop(0.5, #6276a0), 
+                    color-stop(0.5, #556a97), 
+                    color-stop(0.75, #566c98),
+                    to(#546993)); 
+            color: #fff;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+        }
+        .bordered:hover, .bordered.touched {
+            background-image: 
+                -webkit-gradient(linear, left top, left bottom, 
+                    from(#7d88a5), 
+                    color-stop(0.25, #58698c),
+                    color-stop(0.5, #3a4e78), 
+                    color-stop(0.5, #253c6a), 
+                    color-stop(0.75, #273f6d),
+                    to(#273f6d));
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* End Bordered Button Styles */
+        
+        /* Back Bordered Button Styles */
+        .back {
+            padding: 0px 7px 0px 3px;
+            margin-left: 10px;
+            position: relative;
+        }
+        .back > span {
+            position: relative;
+            z-index: 1;
+        }
+        .back:before {
+            content: " ";
+            display: block;
+            z-index: 0;
+            background-image: 
+                -webkit-gradient(linear, left top, right bottom, 
+                    from(#92a1bf), 
+                    color-stop(0.3, #798aad),
+                    color-stop(0.51, #6276a0), 
+                    color-stop(0.51, #556a97), 
+                    color-stop(0.75, #566c98),
+                    to(#546993)); 
+            border-left: solid 1px #484e59;
+            border-bottom: solid 1px #9aa5bb;
+            -webkit-border-top-left-radius: 5px;
+            -webkit-border-bottom-right-radius: 5px;
+            -webkit-border-bottom-left-radius: 4px;
+            height: 23.5px;
+            width: 23.5px;
+            display: inline-block;
+            -webkit-transform: rotate(45deg);
+            -webkit-mask-image: 
+                -webkit-gradient(linear, left bottom, right top, 
+                    from(#000000), 
+                    color-stop(0.5,#000000), 
+                    color-stop(0.5, transparent), 
+                    to(transparent));
+            position: absolute;
+            left: -9px;
+            top: 2.5px;
+            -webkit-background-clip: content;
+        }
+        .back:hover:before, .back.touched:before {
+            background-image: 
+                -webkit-gradient(linear, left top, right bottom, 
+                    from(#7d88a5), 
+                    color-stop(0.3, #58698c),
+                    color-stop(0.51, #3a4e78), 
+                    color-stop(0.51, #253c6a), 
+                    color-stop(0.75, #273f6d),
+                    to(#273f6d)); 
+        }
+        
+        /* End Back Bordered Button Styles */
+        
+        /* Next Bordered Button Styles */
+        .next {
+            padding: 0px 3px 0px 7px;
+            margin-right: 10px;
+            position: relative;
+        }
+        .next > span {
+            position: relative;
+            z-index: 1;
+        }
+        .next:before {
+            content: " ";
+            display: block;
+            z-index: 0;
+            background-image: 
+                -webkit-gradient(linear, left top, right bottom, 
+                    from(#92a1bf), 
+                    color-stop(0.3, #798aad),
+                    color-stop(0.51, #6276a0), 
+                    color-stop(0.51, #556a97), 
+                    color-stop(0.75, #566c98),
+                    to(#546993)); 
+            border-right: solid 1px #9aa5bb;
+            border-top: solid 1px #484e59;
+            -webkit-border-top-left-radius: 5px;
+            -webkit-border-bottom-right-radius: 5px;
+            -webkit-border-top-right-radius: 4px;         
+            height: 23.5px;
+            width: 23.5px;
+            display: inline-block;
+            -webkit-transform: rotate(45deg);
+            -webkit-mask-image: 
+                -webkit-gradient(linear, right top, left bottom, 
+                    from(#000000), 
+                    color-stop(0.5,#000000), 
+                    color-stop(0.5, transparent), 
+                    to(transparent));
+            position: absolute;
+            right: -9px;
+            top: 2.5px;
+            -webkit-background-clip: content;
+        }
+        .next:hover:before, .next.touched:before {
+            background-image: 
+                -webkit-gradient(linear, left top, right bottom, 
+                    from(#7d88a5), 
+                    color-stop(0.3, #58698c),
+                    color-stop(0.51, #3a4e78), 
+                    color-stop(0.51, #253c6a), 
+                    color-stop(0.75, #273f6d),
+                    to(#273f6d)); 
+        }
+        /* End Next Bordered Button Styles */
