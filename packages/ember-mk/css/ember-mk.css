@@ -20,3 +20,18 @@
   height: 100%; 
   width: 100%;  
 }
+
+
+.nav{
+  position:absolute; 
+  left:0px; 
+  top:0px; 
+  width:100%; 
+  height:100%; 
+}
+
+.nav_item{
+  /* set a new point of reference for absolutely positioned elements that are nested inside it */
+  position:relative; 
+  float: left;
+}

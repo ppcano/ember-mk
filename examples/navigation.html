@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/common.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ios.css" type="text/css" media="screen">
+
+    <script type="text/javascript" src="assets/minispade.js"></script>
+    <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="assets/move.js"></script>
+
+    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-touch.js"></script>
+
+    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
+    <script type="text/javascript" src="source/ember-mk.js"></script>
+    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
+
+
+    <script type="text/javascript">
+    touchMove = function(event) {
+      event.preventDefault();
+    }
+    </script>
+
+    <style type="text/css" media="all">
+
+      #nav_view {
+        background-color: blue;
+      }
+
+      .odd {
+        background-color: red;
+      }
+
+      .even {
+        background-color: white;
+      }
+
+    </style>
+
+  </head>
+
+</head>
+<body ontouchmove="touchMove(event);">
+
+
+
+  <script type="text/x-handlebars">
+
+  {{#view App.HeaderView }}
+    {{#if hasBack}}
+      {{#view App.BackButton 
+          class="button bordered back" }}
+        Back
+      {{/view}}
+    {{/if}}
+      {{#view App.NextButton 
+          class="button bordered next"}}
+        Next 
+      {{/view}}
+  {{/view}}
+  </script>
+
+
+  <div class="content">
+
+  </div>
+
+  <div id="footer">
+  </div>
+
+<script type="text/javascript">
+
+var counter = 0;
+App = Em.Application.create({
+});
+
+App.HeaderView = Em.View.extend({
+  elementId: 'header',
+  hasBackBinding: Em.Binding.oneWay('App.navView.hasBack')
+
+});
+
+App.bTap = Ember.Mixin.create({
+  canBoth: false,
+  init: function() {
+
+    this._super();
+    var canBoth = 'ontouchstart' in window && 'onclick' in window;
+    this.set('canBoth', canBoth);
+
+  },
+	bTap: function() {
+  },
+  tapEnd: function(recognizer) {
+    this.bTap();
+  },
+  click: function(){
+    if ( !this.get('canBoth') ) {
+      this.bTap();
+    }
+	}
+});
+
+App.BackButton = Em.View.extend(App.bTap, {
+  bTap: function() {
+    App.navView.popView();
+  }
+});
+
+App.NextButton = Em.View.extend(App.bTap, {
+  bTap: function() {
+    App.navView.pushView( App.NavItemView.create({
+          value: counter++
+    }) );
+  }
+});
+
+
+App.navView = Mk.NavigationView.create({
+    elementId: 'nav_view'
+});
+App.navView.appendTo('.content');
+
+
+App.NavItemView = Em.View.extend( Mk.NavigationItemView,{
+
+  classNameBindings: ['odd', 'even'],
+  value: 0,
+
+  odd: Ember.computed(function(){
+    return (this.get('value')%2 == 0) ? false : true;
+  }).property('value'),
+
+
+  even: Ember.computed(function(){
+    return (this.get('value')%2 == 0) ? true : false;
+  }).property('value'),
+
+});
+
+
+App.navView.pushView( App.NavItemView.create({
+      value: counter++
+}) );
+
+</script>
+
+</body>
+</html>
