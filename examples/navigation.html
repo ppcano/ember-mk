@@ -32,6 +32,9 @@
       #nav_view {
         background-color: blue;
       }
+      .app_nav_item {
+        font-size: 115px; 
+      }
 
       .odd {
         background-color: red;
@@ -130,6 +133,7 @@ App.navView.appendTo('.content');
 
 App.NavItemView = Em.View.extend( Mk.NavigationItemView,{
 
+  classNames: ['app_nav_item'], 
   classNameBindings: ['odd', 'even'],
   value: 0,
 
@@ -141,6 +145,8 @@ App.NavItemView = Em.View.extend( Mk.NavigationItemView,{
   even: Ember.computed(function(){
     return (this.get('value')%2 == 0) ? true : false;
   }).property('value'),
+
+  template: Em.Handlebars.compile('{{value}}')
 
 });
 

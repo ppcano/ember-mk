@@ -1,6 +1,5 @@
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
-
 Mk.NavigationItemView = Em.Mixin.create({
 
   classNames: ['nav_item'],
@@ -13,27 +12,22 @@ Mk.NavigationItemView = Em.Mixin.create({
 
     this._super();
     var root = this.get('rootView');
-
-    var width = root.get('width');
-    var height = root.get('height');
-
-    this.$().height(height);
-    this.$().width(width);
-
-    // move to main view logic by observing insertions
-    root.get('stack').updateWidth();
-    root.move(true);
-
+    // TODO: perhaps there is a better way to do that.
+    root.didInsertStackChild(this);
   }
 
 });
 
-// TODO: performance should be improved, which a solution like SwipeView
-// API, should still be the same
+
+// TODO: better way to handle hasBack option to be shown. 
 Mk.NavigationView = Ember.ContainerView.extend(Mk.Animatable, {
 
   duration: 1000,
   classNames: ['nav'],
+  /* 
+  * When true push/popViews won't be executed.
+  */
+  isMoving: false,
 
   width: null,
   height: null,
@@ -42,26 +36,22 @@ Mk.NavigationView = Ember.ContainerView.extend(Mk.Animatable, {
     return this.get('_hasBack');
   }).property('_hasBack'),
 
-  _position: null,
-  _hasBack: true,
+  _transform: null,
+  _hasBack: false,
+  position: -1,
+
+  _stack: Ember.A([]),
 
   childViews: ['stack'],
 
   stack: Em.ContainerView.extend({
-    /*
-    hasBack: Ember.computed( function() {
-      return this.get('_childViews').get('length') > 1;
-    }).property('_childViews.@each'),
-    */
+
     didInsertElement: function() {
 
-      this.$().height(getPath(this, 'parentView.height'));
-    },
+      this._super();
+      this.$().height(getPath(this, 'parentView.height') );
+      this.$().width(3*getPath(this, 'parentView.width') );
 
-    updateWidth: function(){
-      var width = getPath(this, 'parentView.width');
-      var length = this.get('childViews').get('length');
-      this.$().width(length*width);
     }
 
   }),
@@ -70,63 +60,117 @@ Mk.NavigationView = Ember.ContainerView.extend(Mk.Animatable, {
 
     var height = this.$().height( );
     var width = this.$().width( );
-
     this.set('height', height);
     this.set('width', width);
 
   },
 
+  didInsertStackChild: function(view){
+    
+    var position = this.get('position')
+      , left;
+    
+    if ( !this._stack.contains( view ) ) {
 
-  move: function(hasBeenInsertedElement, callback) {
-    var position = this.get('_position');
+      this._stack.pushObject(view);
+      position++; 
+      left = position*100+'%';
+      view.$().css("left", left); 
+      this._move(true);
 
-
-    if ( position === null ) {
-       position = 0;
     } else {
+      position--; 
+      left = (position-1)*100+'%';
+      view.$().css("left", left); 
+    }
 
+    this.set('position', position);
+    
+  },
+
+  pushView: function(newView) {
+
+    if ( !this.get('isMoving') ) {
+
+      this.set('isMoving', true );
+      this.set('_hasBack', this._stack.get('length')+1 > 1);
+
+      var stackView =  this.get('stack');
+      set(newView, '_parentView', stackView );
+
+      var child = stackView.get('childViews');
+      child.pushObject(newView);
+
+      if ( child.get('length') === 3 ) {
+        child.shiftObject();
+      }
+
+    }
+
+  },
+
+  popView: function(animated) {
+    
+    var child =  this.get('stack').get('childViews');
+
+    if ( child.get('length') <= 1 ) {
+      throw new Error(' cannot popView');
+    }
+
+
+    if ( !this.get('isMoving') ) {
+
+      this.set('isMoving', true );
+      this.set('_hasBack', this._stack.get('length')-1>1);
+
+      var that = this;
+      this._move(false, function () {
+
+        var view = that._stack.popObject();
+        var length = that._stack.get('length'); 
+
+        if ( length > 1 ) {
+
+          var backView = that._stack[length-2];
+          child.unshiftObject(backView);
+
+        } else { // because didInsertStackChild won't be fired
+
+          that.set('position', that.get('position') - 1 );
+
+        }
+
+        var view = child.popObject();
+        view.destroy();
+
+      });
+    }
+
+  },
+
+  _move: function(hasBeenInsertedElement, callback) {
+    var transform = this.get('_transform');
+
+    if ( transform === null ) {
+       transform = 0;
+       this.set('isMoving', false);
+    } else {
       var width = this.get('width');
-      position += (hasBeenInsertedElement) ? width*(-1): width;
+      transform += (hasBeenInsertedElement) ? width*(-1): width;
 
-      this.animate({duration: this.duration}, {x: position}, function() {
+      var that = this;
+      this.animate({duration: this.duration, stopEventHandling:true}, {x: transform}, function() {
 
           if ( callback ) {
             callback();
           }
 
+          that.set('isMoving', false);
+
       });
     }
 
-    this.set('_position', position);
-  },
-
-
-  pushView: function(newView) {
-
-    //set(newView, 'root', this);  done with nearestInstanceOf 
-    //this.appendChild(newView);--> exception cannot append out of
-    //rendering process
-		
-    var child = this.get('stack').get('childViews');
-    set(newView, '_parentView', this);
-    child.pushObject(newView);
-
-  },
-
-  popView: function(animated) {
-    // childViews is mutable_array
-    // - removeObject// AddObject  
-    
-    var that = this; 
-
-    this.move(false, function() {
-
-      var child = that.get('stack').get('childViews');
-      var view = child.popObject();
-			view.destroy();
-      that.get('stack').updateWidth();
-
-    });
+    this.set('_transform', transform);
 
   }
 
