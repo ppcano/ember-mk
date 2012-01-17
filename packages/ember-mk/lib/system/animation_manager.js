@@ -28,7 +28,7 @@ Mk.AnimationManager = Em.Object.create({
 
     if (!this.get('animation') ) {
 
-      var animation = this.get('content').popObject();
+      var animation = this.get('content').shiftObject();
 
       if ( animation ) {
         this.set('animation', animation);
