@@ -12,7 +12,7 @@ way to avoid developers rewrite from scratch what other developers have already 
 
 # Features
 
-  - Modal, Swipe, Scroll and Tab Views.
+  - Modal, Swipe, Scroll, Navigation and Tab Views.
   - Animation Manager: using AnimatableMixin ( animates either default
     properties or own functions )
 
