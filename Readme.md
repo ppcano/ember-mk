@@ -46,8 +46,3 @@ Test only a specific test file (add test param: test location without extension)
 
 If you want to test against other ember/jquery/ember-touchs version, deployed the js on the examples/assets directory.
 
-
-# TODO
-
-- Replace movejs dependency with own transform API. 
-- Rake command must concatenate css output 
