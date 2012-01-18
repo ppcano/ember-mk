@@ -84,7 +84,7 @@ Mk.TabView = Ember.View.extend({
     return this.nearestInstanceOf(Mk.TabMainView);
   }).property(),
 
-  touchHoldEnd: function(recognizer) {
+  tapEnd: function(recognizer) {
     setPath(this, 'tabsContainer.currentView', get(this, 'value'));
   },
 
