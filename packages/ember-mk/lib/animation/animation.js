@@ -1,4 +1,5 @@
 
+require("ember-mk/core");
 
 Mk.Animation = Em.Object.extend({
   options: null, //{duration, delay, stopEventHandling, immediately}}  

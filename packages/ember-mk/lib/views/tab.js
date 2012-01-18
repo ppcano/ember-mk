@@ -1,3 +1,5 @@
+require("ember-mk/core");
+
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 /*

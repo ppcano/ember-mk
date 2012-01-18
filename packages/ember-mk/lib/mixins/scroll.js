@@ -1,5 +1,9 @@
 
+require("ember-mk/core");
+require("ember-mk/mixins/animatable");
+
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
+
 
 
 Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {

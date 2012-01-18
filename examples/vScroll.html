@@ -86,6 +86,8 @@
 
 <script type="text/javascript">
 
+minispade.require('ember-mk/main');
+
 var items = [];
 for(var i=0; i< 100; i++) {
   items.push( Ember.Object.create({name: i + ' item', id: i }) );

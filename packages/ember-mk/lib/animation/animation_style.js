@@ -1,3 +1,6 @@
+
+require("ember-mk/core");
+
 Mk.AnimationStyle = {
   FROM_DOWN: 0
   , FROM_UP: 1

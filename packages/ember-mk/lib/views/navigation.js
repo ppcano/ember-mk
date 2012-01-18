@@ -1,3 +1,7 @@
+
+require("ember-mk/core");
+require("ember-mk/mixins/animatable");
+
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
 Mk.NavigationItemView = Em.Mixin.create({

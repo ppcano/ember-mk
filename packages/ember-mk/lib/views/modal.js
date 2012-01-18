@@ -1,4 +1,8 @@
 
+require("ember-mk/core");
+require("ember-mk/mixins/animatable");
+require("ember-mk/animation/animation_style");
+
 
 Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 

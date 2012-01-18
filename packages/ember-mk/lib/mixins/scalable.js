@@ -1,4 +1,5 @@
 
+require("ember-mk/core");
 // This mixin is a first attempt to create UIs which scales on multiple screens, based on
 // screen dimensions
 Mk.ScalableMixin = Em.Mixin.create({

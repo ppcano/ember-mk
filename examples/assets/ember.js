@@ -6302,9 +6302,11 @@ function pushCtx(ctx) {
 }
 
 function iter(key, value) {
+  var valueProvided = arguments.length === 2;
+
   function i(item) {
     var cur = get(item, key);
-    return value===undefined ? !!cur : value===cur;
+    return valueProvided ? value===cur : !!cur;
   } 
   return i ;
 }
@@ -6612,7 +6614,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Array} filtered array
   */
   filterProperty: function(key, value) {
-    return this.filter(iter(key, value));
+    return this.filter(iter.apply(this, arguments));
   },
 
   /**
@@ -6667,7 +6669,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Object} found item or null
   */
   findProperty: function(key, value) {
-    return this.find(iter(key, value));
+    return this.find(iter.apply(this, arguments));
   },
 
   /**
@@ -6712,7 +6714,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Array} filtered array
   */
   everyProperty: function(key, value) {
-    return this.every(iter(key, value));
+    return this.every(iter.apply(this, arguments));
   },
 
 
@@ -6758,7 +6760,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Boolean} true
   */
   someProperty: function(key, value) {
-    return this.some(iter(key, value));
+    return this.some(iter.apply(this, arguments));
   },
 
   /**
@@ -10861,17 +10863,9 @@ Ember.EventDispatcher = Ember.Object.extend(
 
   /** @private */
   _bubbleEvent: function(view, evt, eventName) {
-    var result = true, handler,
-        self = this;
-
-      Ember.run(function() {
-        handler = view[eventName];
-        if (Ember.typeOf(handler) === 'function') {
-          result = handler.call(view, evt);
-        }
-      });
-
-    return result;
+    return Ember.run(function() {
+      return view.handleEvent(eventName, evt);
+    });
   },
 
   /** @private */
@@ -12286,6 +12280,19 @@ Ember.View = Ember.Object.extend(
         view.transitionTo(state);
       });
     }
+  },
+
+  // .......................................................
+  // EVENT HANDLING
+  //
+
+  /**
+    @private
+
+    Handle events from `Ember.EventDispatcher`
+  */
+  handleEvent: function(eventName, evt) {
+    return this.invokeForState('handleEvent', eventName, evt);
   }
 
 });
@@ -12409,6 +12416,11 @@ Ember.View.states = {
 
     getElement: function() {
       return null;
+    },
+
+    // Handle events from `Ember.EventDispatcher`
+    handleEvent: function() {
+      return true; // continue event propagation
     }
   }
 };
@@ -12605,6 +12617,16 @@ Ember.View.states.hasElement = {
 
     get(view, 'domManager').remove();
     return view;
+  },
+
+  // Handle events from `Ember.EventDispatcher`
+  handleEvent: function(view, eventName, evt) {
+    var handler = view[eventName];
+    if (Ember.typeOf(handler) === 'function') {
+      return handler.call(view, evt);
+    } else {
+      return true; // continue event propagation
+    }
   }
 };
 
@@ -12918,13 +12940,6 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   itemViewClass: Ember.View,
 
-  /**
-    A list  class names to be applied to the ChildViews.
-    @type Ember.Array
-    @default null
-  */
-  itemViewClassNames: null,
-
   init: function() {
     var ret = this._super();
     this._contentDidChange();
@@ -13006,7 +13021,6 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
-        itemViewClassNames = get(this, 'itemViewClassNames'),
         childViews = get(this, 'childViews'),
         addedViews = [], view, item, idx, len, itemTagName;
 
@@ -13022,7 +13036,6 @@ Ember.CollectionView = Ember.ContainerView.extend(
         item = content.objectAt(idx);
 
         view = this.createChildView(itemViewClass, {
-          classNames: itemViewClassNames, 
           content: item,
           contentIndex: idx
         });
@@ -14053,14 +14066,7 @@ Ember.TextSupport = Ember.Mixin.create(
   },
 
   _elementValueDidChange: function() {
-    var element = this.$();
-
-    if (element.length) {
-      set(this, 'value', this.$().val());
-    } else {
-      // the element is receiving blur because it was
-      // removed, so don't do anything.
-    }
+    set(this, 'value', this.$().val());
   }
 
 });
@@ -14112,10 +14118,25 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   classNameBindings: ['isActive'],
 
   tagName: 'button',
-  attributeBindings: ['type', 'disabled'],
-  type: 'button',
-  disabled: false,
+
   propagateEvents: false,
+
+  attributeBindings: ['type', 'disabled', 'href'],
+
+  // Defaults to 'button' if tagName is 'input' or 'button'
+  type: Ember.computed(function(key, value) {
+    var tagName = this.get('tagName');
+    if (value !== undefined) { this._type = value; }
+    if (this._type !== undefined) { return this._type; }
+    if (tagName === 'input' || tagName === 'button') { return 'button'; }
+  }).property('tagName').cacheable(),
+
+  disabled: false,
+
+  // Allow 'a' tags to act like buttons
+  href: Ember.computed(function() {
+    return this.get('tagName') === 'a' ? '#' : null;
+  }).property('tagName').cacheable(),
 
   click: function() {
     // Actually invoke the button's target and action.
@@ -14168,6 +14189,37 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   touchEnd: function(touch) {
     return this.mouseUp(touch);
+  }
+});
+
+})({});
+
+
+(function(exports) {
+// ==========================================================================
+// Project:   Ember Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+var set = Ember.set, get = Ember.get;
+
+Ember.RadioButton = Ember.View.extend({
+  title: null,
+  checked: false,
+  group: "radio_button",
+  disabled: false,
+
+  classNames: ['ember-radio-button'],
+
+  defaultTemplate: Ember.Handlebars.compile('<label><input type="radio" {{bindAttr disabled="disabled" name="group" value="val" checked="checked"}}>{{title}}</label>'),
+
+  change: function() {
+    Ember.run.once(this, this._updateElementValue);
+  },
+
+  _updateElementValue: function() {
+    var input = this.$('input:radio');
+    set(this, 'value', input.attr('value'));
   }
 });
 

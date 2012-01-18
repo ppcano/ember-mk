@@ -1,4 +1,4 @@
-
+require("ember-mk/core");
 //  improve lifecycle --> depending on Application?
 Mk.AnimationManager = Em.Object.create({
 
