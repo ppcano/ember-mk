@@ -52,11 +52,10 @@ end
 task :build => ["ember:mk"]
 
 
+mkdir_p "dist"
 
 file "dist/ember-mk.js" => :build do
   puts "Generating ember-mk.js"
-
-  mkdir_p "dist"
 
   File.open("dist/ember-mk.js", "w") do |file|
     file.puts strip_require("tmp/static/ember-mk.js")
