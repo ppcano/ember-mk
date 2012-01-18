@@ -72,7 +72,7 @@
   <div class="content">
 
     <script type="text/x-handlebars">
-			{{#view Mk.SwipeView 
+			{{#view App.SwipeView 
 					content="swipe_items" 
 					itemViewClass="App.SwipeItemView" }}
 			{{/view}}
@@ -100,6 +100,10 @@ App = Em.Application.create({
 });
 
 
+App.SwipeView = Mk.SwipeView.extend({
+
+});
+
 App.SwipeItemView = Em.ContainerView.extend({
   classNameBindings: ['greenbg'],
   childViews: ['child'],
@@ -113,8 +117,16 @@ App.SwipeItemView = Em.ContainerView.extend({
 
   child: Em.ContainerView.extend( Mk.ScrollMixin, Mk.ScalableMixin,  {
 
+    scrollOptions: {
+      hScroll: false,
+      vScroll: true,
+      duration: 750,
+      velocity: 0.02,
+      simultaneously: false,
+      initThreshold: 10
+    },
+
     margin_top: 0.05,
-    hScroll: false,
     classNames: ['sw_content'],
     childViews: ['photo', 'info1', 'info2'],
 
@@ -143,9 +155,6 @@ App.SwipeItemView = Em.ContainerView.extend({
   })
 
 });
-
-
-
 
 </script>
 

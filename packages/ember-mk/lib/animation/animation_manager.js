@@ -77,14 +77,15 @@ Mk.AnimationManager = Em.Object.create({
         if ('function' == typeof animation.callback)
           animation.callback(animation.view);
 
-        if ( !animation.options.immediately ) {
-
-          that.endCurrentAnimation();
-          that.startNewAnimation();
-
-        }
-
       }, animation.options.duration);
+
+      // otherwise, other animations cannot began
+      if ( !animation.options.immediately ) {
+
+        that.endCurrentAnimation();
+        that.startNewAnimation();
+
+      }
 
     }, animation.delay);
 
