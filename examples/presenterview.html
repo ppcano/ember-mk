@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+  <title></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/common.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/ios.css" type="text/css" media="screen">
+
+    <script type="text/javascript" src="assets/minispade.js"></script>
+    <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
+    <script type="text/javascript" src="assets/jquery.transit.js"></script>
+
+    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-touch.js"></script>
+
+    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
+    <script type="text/javascript" src="source/ember-mk.js"></script>
+    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
+
+
+    <script type="text/javascript">
+    touchMove = function(event) {
+      event.preventDefault();
+    }
+    </script>
+
+    <style type="text/css" media="all">
+
+      #app {
+        position:absolute; 
+        background:yellow;
+        top:20%;
+        left:20%;
+        height:60%;
+        width:60%;
+      }
+
+      #initview {
+
+        position: absolute;
+        height:100%;
+        width:100%;
+        background:purple;
+      }
+
+      .modal {
+
+        position: absolute;
+        height:100%;
+        width:100%;
+
+      }
+
+      .odd {
+        background-color: green;
+      }
+
+      .even {
+        background-color: gray;
+      }
+
+      .cancel {
+
+        position: absolute;
+        left: 10%;
+        height:10%;
+        width:10%;
+
+        background:yellow;
+
+      }
+
+      .add {
+
+        position: absolute;
+        left: 60%;
+        height:10%;
+        width:10%;
+        background:white;
+
+      }
+    </style>
+
+  </head>
+
+</head>
+<body ontouchmove="touchMove(event);">
+
+
+  <div id="header">
+    Change animationStyle property. 
+  </div>
+
+  <div id="app">
+
+  </div>
+
+  <div id="footer">
+  </div>
+
+
+<script type="text/javascript">
+
+minispade.require('ember-mk/main');
+
+var animation = {
+  duration: 750,
+  animationStyle: Mk.AnimationStyle.FLIP_FROM_UP,
+  //animationStyle: Mk.AnimationStyle.FROM_LEFT,
+  //animationStyle: Mk.AnimationStyle.NONE,
+  easing: 'in'
+
+};
+
+App = Em.Application.create({
+});
+
+App.bTap = Ember.Mixin.create({
+  canBoth: false,
+  init: function() {
+
+    this._super();
+    var canBoth = 'ontouchstart' in window && 'onclick' in window;
+    this.set('canBoth', canBoth);
+
+  },
+	bTap: function() {
+  },
+  tapEnd: function(recognizer) {
+    this.bTap();
+  },
+  click: function(){
+    if ( !this.get('canBoth') ) {
+      this.bTap();
+    }
+	}
+});
+
+
+var counter = 0;
+
+App.ModalView = Mk.PresenterView.extend(  {
+
+  classNames: ['modal'],
+  classNameBindings: ['odd', 'even'],
+  value: 0,
+
+  odd: Ember.computed(function(){
+    return (this.get('value')%2 == 0) ? false : true;
+  }).property('value'),
+
+  even: Ember.computed(function(){
+    return (this.get('value')%2 == 0) ? true : false;
+  }).property('value'),
+
+
+  initViewClass: Em.ContainerView.extend(App.bTap, {
+
+    childViews: ['cancel', 'add'],
+
+    cancel: Em.View.extend(App.bTap,{
+      classNames: ['cancel'],
+
+
+      bTap: function() {
+
+        var view = this.nearestInstanceOf(Mk.PresenterView);
+
+        var presenterView = view.get('presentingView');
+        presenterView.dismiss(animation);
+
+      },
+      template: Em.Handlebars.compile('Cancel')
+
+    }),
+
+    add: Em.View.extend(App.bTap,{ 
+
+      classNames: ['add'],
+
+      bTap: function() {
+
+
+        var view = App.ModalView.create({
+          value: counter++
+                                       
+        });
+        
+        var presenterView = this.nearestInstanceOf(Mk.PresenterView);
+        presenterView.present(view, animation);
+
+      },
+
+      template: Em.Handlebars.compile('Add')
+    })
+
+  })
+
+});
+
+
+App.view = Mk.PresenterView.create({
+
+  initViewClass: Em.View.extend(App.bTap, {
+    
+    elementId: 'initview',
+
+    bTap: function() {
+
+      var view = App.ModalView.create({
+        value: counter++
+      });
+
+      var presenterView = this.nearestInstanceOf(Mk.PresenterView);
+      presenterView.present(view, animation);
+
+    },
+
+    template: Em.Handlebars.compile('Tap on the view')
+
+  })
+
+});
+
+App.view.appendTo('#app');
+
+
+
+</script>
+
+</body>
+</html>

@@ -18,4 +18,5 @@ require('ember-mk/views/modal');
 require('ember-mk/views/navigation');
 require('ember-mk/views/swipe');
 require('ember-mk/views/tab');
+require('ember-mk/views/presenter_view');
 

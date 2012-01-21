@@ -7,12 +7,13 @@ The main idea behind:
 - Manage/Discuss the required features for a emberjs Mobile UIKit.
 - Reuse Mobile UIs components to be improved on its daily use.
 
-Initially, the project is not intented to be production ready, but a
-way to avoid developers rewrite from scratch what other developers have already done.
-
 # Features
 
   - Modal, Swipe, Scroll, Navigation and Tab Views.
+
+  - PresenterView: manage application flow presenting animated views,
+    building a chain of PresenterViews. 
+
   - Animation Manager: using AnimatableMixin ( animates either default
     properties or own functions )
 
@@ -24,11 +25,10 @@ Install gems with _bundle install_ and execute _rake_ task, ember-mk  will be cr
 
 Import the js and css files to your project. Also include jquery.transit.js on your project.
 
-
 ##Animations
 
 Currently, animations are done with jquery.transit.js. You can also use your own
-animations by just giving a function to the animate view method.
+animations by just giving a function to the _animate_ view method.
 
 ##Examples
 

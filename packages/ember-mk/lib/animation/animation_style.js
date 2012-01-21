@@ -12,3 +12,11 @@ Mk.AnimationStyle = {
   , FLIP_FROM_UP: 7
   , FLIP_FROM_DOWN: 8
 };
+
+
+Mk.AnimationStyle.isFlip = function(val) {
+  return ( val === Mk.AnimationStyle.FLIP_FROM_UP || 
+       val === Mk.AnimationStyle.FLIP_FROM_DOWN ||
+       val === Mk.AnimationStyle.FLIP_FROM_RIGHT ||
+       val === Mk.AnimationStyle.FLIP_FROM_LEFT );
+};

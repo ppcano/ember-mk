@@ -43,3 +43,18 @@
   height: 100%; 
   width: 100%; 
 }
+
+.presenter {
+  position: absolute;
+	height:100%;
+	width:100%;
+}
+
+.presenter_child {
+
+  -webkit-transform: translateZ(0);
+  position: absolute;
+	height:100%;
+	width:100%;
+}
+
