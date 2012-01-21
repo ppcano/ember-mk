@@ -205,7 +205,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
 
     if ( !duration ) {
-      duration = '0s';
+      duration = undefined;
     }
 
     if ( this.scrollOptions.vScroll ) {

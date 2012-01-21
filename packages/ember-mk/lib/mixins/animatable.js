@@ -1,76 +1,58 @@
-
 require("ember-mk/core");
 require("ember-mk/animation/animation_manager");
+
 
 // Apply Mixin to your views.
 //
 // options: hash with following properties {duration, delay, stopEventHandling, immediately}
 //
-// animation can be: 
-// - function
-// - hash with properties: x, y
+// animation property can be setup via: 
+// 1) functions
+//
+//      this.animate({duration: duration}, function(me) {
+//
+//        move( me.id )
+//          .y(positionY)
+//          .duration(duration)
+//          .end();
+//
+//      });
+//
+// 2) css properties (see jquery.transit API)
 //
 //
-// Example: 
-//
-//    this.animate({duration: duration}, function(me) {
-//
-//      move( me.id )
-//        .y(positionY)
-//        .duration(duration)
-//        .end();
-//
-//    });
 Mk.Animatable = Em.Mixin.create({
 
-  animate: function(options, animation, callback) {
+  animate: function(options, animation, easing, callback) {
 
-    // TODO: That should be updated with an own API
-    // wrapping the api to movejs
-    if ('function' != typeof animation) {
+    if ( typeof easing == 'function') {
+      callback = easing;
+      easing = null;
+    } else if ( !easing ) {
+      easing = null;
+    }
+
+    // wrapping the api to jquery.transit
+    if ( typeof animation != 'function') {
 
       var fn
-        , duration = options.duration || 0
-        , x = animation['x']
-        , y = animation['y'];
+        , ease = easing
+        , duration = options.duration 
+        , properties = animation;
 
-      if ( x !== undefined && y !== undefined ) {
 
-        fn = function( me ) {
-
-          move('#'+ me.get('elementId') )
-            .x(x)
-            .y(y)
-            .duration(duration)
-            .end();
-
-        }
-
-      } else if ( x !== undefined ) {
+      if ( duration ) {
 
         fn = function( me ) {
-
-          move('#'+ me.get('elementId') )
-            .x(x)
-            .duration(duration)
-            .end();
-
-        }
-
-      } else if ( y !== undefined ) {
-
-        fn = function( me ) {
-
-          move('#'+ me.get('elementId') )
-            .y(y)
-            .duration(duration)
-            .end();
-
+          me.$().transition(properties, duration, easing);
         }
 
       } else {
 
-        throw Error( 'animation is not valid');
+        fn = function( me ) {
+          me.$().css(properties);
+        }
+
 
       }
 
@@ -78,13 +60,13 @@ Mk.Animatable = Em.Mixin.create({
 
     }
 
-    var animation = Mk.Animation.create({
+    var item = Mk.Animation.create({
       options: options,
       fn: animation,
       callback: callback,
       view: this
     });
-    Mk.AnimationManager.push( animation );
+    Mk.AnimationManager.push( item );
   }
 
 });

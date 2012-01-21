@@ -22,12 +22,12 @@ way to avoid developers rewrite from scratch what other developers have already 
 
 Install gems with _bundle install_ and execute _rake_ task, ember-mk  will be created on the _dist_ directory.
 
-Import the js and css files to your project. Also include move.js on your project.
+Import the js and css files to your project. Also include jquery.transit.js on your project.
 
 
 ##Animations
 
-Currently, animations are done with move.js. You can also use your own
+Currently, animations are done with jquery.transit.js. You can also use your own
 animations by just giving a function to the animate view method.
 
 ##Examples
