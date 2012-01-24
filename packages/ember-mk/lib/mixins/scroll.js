@@ -68,6 +68,45 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
   },
 
+
+  refresh: function(refreshParentProperties, refreshViewProperties) {
+
+    if ( refreshParentProperties ) {
+      var parent = this.$().parent();
+      set(this, '_scrollableHeight', parent.height());
+      set(this, '_scrollableWidth', parent.width());
+    }
+
+    if ( refreshViewProperties ) {
+      set(this, '_height', this.$().outerHeight(true));
+      set(this, '_width', this.$().width());
+    }
+
+    var positionX = this.get('_positionX');
+    var positionY = this.get('_positionY');
+
+    //TODO at the gesture manager level: waiting for jquery.transit
+    var properties = {};
+    properties['-webkit-transform-style']='';
+    properties['-webkit-transition-property']='';
+    properties['-webkit-transition-duration']='';
+    properties['-webkit-transition-timing-function']='';
+    properties['-webkit-transition-delay']='';
+    properties['-webkit-transform']='';
+
+
+    this._transformOnChange(positionX*(-1), positionY*(-1), 0, properties );
+    this._restartElasticEffect();
+
+    // todo: must test if the gestures was already recognized
+    if ( !this.scrollOptions.simultaneously ) { 
+      this.unblockGestureRecognizer();
+    }
+
+
+  }, 
+
+
   /*
  * Dimensions can be setup on view declaration.
  * Setup dimensions on the view is required when view dimensions are updated after inserting the element in the DOM.
@@ -199,7 +238,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
   },
 
-  _transformOnChange: function(positionX, positionY, duration) {
+  _transformOnChange: function(positionX, positionY, duration, properties) {
     
     this._transformPosition(positionX, positionY);
 
@@ -208,24 +247,24 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
       duration = undefined;
     }
 
+    if ( !properties ) {
+      properties = {};
+    }
+
     if ( this.scrollOptions.vScroll ) {
-
-      positionY = get(this, '_positionY');
-
-      this.animate({duration: duration},{y:positionY}); 
-
+      properties['y'] = this.get('_positionY'); 
     }
 
     if ( this.scrollOptions.hScroll ) {
-
-      positionX = get(this, '_positionX');
-      this.animate({duration: duration},{x:positionX}); 
-
+      properties['x'] = this.get('_positionX'); 
     }
+
+    this.animate({duration: duration}, properties); 
 
     //console.log( ' distanceY ' + distanceY + ' positionY ' +positionY );
     
   },
+
 
   _correctPosition: function() {
 
