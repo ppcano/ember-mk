@@ -27,9 +27,9 @@ Mk.Animatable = Em.Mixin.create({
 
     if ( typeof easing == 'function') {
       callback = easing;
-      easing = null;
+      easing = undefined;
     } else if ( !easing ) {
-      easing = null;
+      easing = undefined;
     }
 
     // wrapping the api to jquery.transit

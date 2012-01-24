@@ -331,7 +331,9 @@ Mk.PresenterView = Em.ContainerView.extend(Mk.Animatable, {
         , '-webkit-transition-delay': ''
         , '-webkit-transform': ''
       };
+
       transformView.$().css(css);
+      //transformView.get('element').style['WebkitTransition'] = null;
       fn();
 
     }); 

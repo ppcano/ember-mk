@@ -85,17 +85,10 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     var positionX = this.get('_positionX');
     var positionY = this.get('_positionY');
 
-    //TODO at the gesture manager level: waiting for jquery.transit
-    var properties = {};
-    properties['-webkit-transform-style']='';
-    properties['-webkit-transition-property']='';
-    properties['-webkit-transition-duration']='';
-    properties['-webkit-transition-timing-function']='';
-    properties['-webkit-transition-delay']='';
-    properties['-webkit-transform']='';
 
+    this.get('element').style['WebkitTransition'] = null;
 
-    this._transformOnChange(positionX*(-1), positionY*(-1), 0, properties );
+    this._transformOnChange(positionX*(-1), positionY*(-1)  );
     this._restartElasticEffect();
 
     // todo: must test if the gestures was already recognized
