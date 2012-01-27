@@ -14,6 +14,8 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     duration: 750,
     velocity: 0.2,
 
+    exceeded: true,
+
     simultaneously: true,
     initThreshold: 10
   },
@@ -69,6 +71,12 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     if ( this.scrollOptions.vScroll === undefined ) {
       this.scrollOptions.vScroll = true;
     }
+
+    if ( this.scrollOptions.exceeded === undefined ) {
+      this.scrollOptions.exceeded = true;
+    }
+
+
 
     pan["simultaneously"] = this.scrollOptions.simultaneously;
     pan["initThreshold"] = this.scrollOptions.initThreshold;
@@ -234,21 +242,41 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
     var result;
 
-    result = get(this, '_positionY');
+    result = this.get('_positionY');
     result+= positionY;
-    set(this,'_positionY', result);
 
-    result = get(this, '_positionX');
+    if ( !this.scrollOptions.exceeded ) {
+
+      var newPositionY = this._getCorrectedPosition( true, result );
+      if ( newPositionY !== undefined ) {
+        result = newPositionY;
+      }
+
+    }
+
+    this.set('_positionY', result);
+
+
+    result = this.get('_positionX');
     result+= positionX;
-    set(this,'_positionX', result);
+    if ( !this.scrollOptions.exceeded ) {
 
-    result = get(this, '_distanceY');
+      var newPositionX = this._getCorrectedPosition( false, result );
+      if ( newPositionX !== undefined ) {
+        result = newPositionX;
+      }
+
+    }
+
+    this.set('_positionX', result);
+
+    result = this.get('_distanceY');
     result+= positionY;
-    set(this,'_distanceY', result);
+    this.set('_distanceY', result);
 
-    result = get(this, '_distanceX');
+    result = this.get('_distanceX');
     result+= positionX;
-    set(this,'_distanceX', result);
+    this.set('_distanceX', result);
 
   },
 
@@ -287,24 +315,49 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     
   },
 
+  _getCorrectedPosition: function(vertical, currentPosition){
+
+      var result = undefined
+        , position
+        , max;
+
+      if ( vertical ) { 
+
+        if ( currentPosition === undefined ) {
+          currentPosition = this.get('_positionY');
+        }
+
+        max = this.get('_height') - this.get('_scrollableHeight');
+
+
+      } else {
+
+        if ( currentPosition === undefined ) {
+          currentPosition = this.get('_positionX');
+        }
+
+        max = this.get('_width') - this.get('_scrollableWidth');
+
+      }
+
+      position = currentPosition*(-1);
+      if ( max < 0 ||  position < 0) {
+        result = 0;
+      } else if ( position > max ) {
+        result = max*(-1);
+      }
+
+      return result;
+
+  },
+
 
   _correctPosition: function() {
-
-    var maxHeight = this.get('_height') - this.get('_scrollableHeight');
-    var maxWidth = this.get('_width') - this.get('_scrollableWidth');
-
 
 
     if ( this.scrollOptions.vScroll ) {
 
-      var positionY = get(this, '_positionY')*(-1);
-      var newPositionY = undefined;
-
-      if ( maxHeight < 0 ||  positionY < 0) {
-        newPositionY = 0;
-      } else if ( positionY > maxHeight ) {
-        newPositionY = maxHeight*(-1);
-      }
+      var newPositionY = this._getCorrectedPosition( true ); 
 
       if ( newPositionY !== undefined ) {
 
@@ -317,17 +370,9 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
     if ( this.scrollOptions.hScroll ) {
 
-      var positionX = get(this, '_positionX')*(-1);
-      var newPositionX = undefined;
-
-      if ( maxWidth < 0 ||  positionX < 0) {
-        newPositionX = 0;
-      } else if ( positionX > maxWidth ) {
-        newPositionX = maxWidth*(-1);
-      }
+      var newPositionX = this._getCorrectedPosition( false );
 
       if ( newPositionX !== undefined ) {
-
 
         this.animate({duration: this.scrollOptions.duration}, {x: newPositionX}); 
 
@@ -341,15 +386,14 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
   _debugRecognizer: function(name, r) {
 
     //console.log(name + '  ' + this.toString() );
-
-
     /*
+
     var change = get(r, 'translation')
     var positionX = get(this, '_positionX');
     var positionY = get(this, '_positionY');
-    console.log( name+ ' x ('+r.translation.x+') pos ('+positionX+')' );
+    //console.log( name+ ' x ('+r.translation.x+') pos ('+positionX+')' );
     console.log( name+ ' y ('+r.translation.y+') pos ('+positionY+')' );
-    */
+     */
   }
 
 });
