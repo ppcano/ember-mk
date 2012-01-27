@@ -41,10 +41,40 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
   init: function() {
 
     var pan = this.get('panOptions');
+
+    // scrollOptions returns of the instance, not from our mixin
     this.scrollOptions = this.get('scrollOptions');
+
+    // TODO; find a better way. 
+    if ( this.scrollOptions.simultaneously === undefined ) {
+      this.scrollOptions.simultaneously = true;
+    }
+
+    if ( this.scrollOptions.initThreshold === undefined ) {
+      this.scrollOptions.initThreshold = 10;
+    }
+
+    if ( this.scrollOptions.duration === undefined ) {
+      this.scrollOptions.duration = 750;
+    }
+
+    if ( this.scrollOptions.velocity === undefined ) {
+      this.scrollOptions.velocity = 0.2;
+    }
+
+    if ( this.scrollOptions.hScroll === undefined ) {
+      this.scrollOptions.hScroll = false;
+    }
+
+    if ( this.scrollOptions.vScroll === undefined ) {
+      this.scrollOptions.vScroll = true;
+    }
 
     pan["simultaneously"] = this.scrollOptions.simultaneously;
     pan["initThreshold"] = this.scrollOptions.initThreshold;
+
+    pan["delegateName"] = this.scrollOptions.delegateName;
+    pan["delegate"] = this.scrollOptions.delegate;
 
     if ( this.scrollOptions.hScroll && this.scrollOptions.vScroll  ) {
       pan["direction"] = Em.GestureDirection.Horizontal | Em.GestureDirection.Vertical;
@@ -58,7 +88,6 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     //console.log( this.get('panOptions').simultaneously );
 
     this._super();
-
   },
 
   didInsertElementEnd: function() {
