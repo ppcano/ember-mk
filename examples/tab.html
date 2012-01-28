@@ -70,13 +70,13 @@
 
 {{#view Mk.TabMainView class="tab_main" currentView="pane1"}}
 
-	{{#view Mk.TabPaneView id="pane1" viewName="pane1"}}
+	{{#view App.TabPaneView id="pane1" viewName="pane1"}}
     <div style="background-color: red;">
     </div>
 
 	{{/view}}
 
-	{{#view Mk.TabPaneView id="pane2" viewName="pane2"}}
+	{{#view App.TabPaneView id="pane2" viewName="pane2"}}
 
 
     <div style="background-color: blue;">
@@ -84,14 +84,14 @@
 
 	{{/view}}
 
-	{{#view Mk.TabPaneView id="pane3" viewName="pane3"}}
+	{{#view App.TabPaneView id="pane3" viewName="pane3"}}
 
     <div style="background-color: brown;">
     </div>
 
 	{{/view}}
 
-	{{#view Mk.TabPaneView id="pane4" viewName="pane4"}}
+	{{#view App.TabPaneView id="pane4" viewName="pane4"}}
 
 	{{/view}}
 
@@ -117,6 +117,10 @@
   App = Em.Application.create({
   });
 
+  App.TabPaneView = Em.View.extend( Mk.TabPaneView, {
+
+  });
+
   App.SelectedTabView = Mk.TabView.extend({
 
     classNameBindings: ['selected'],
@@ -127,7 +131,6 @@
     }).property('tabsContainer.currentView')
 
   });
-
 
 </script>
 

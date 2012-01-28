@@ -9,7 +9,6 @@ var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.
  */
 Mk.TabMainView = Ember.View.extend({
 
-  controller: null,
   panes: {},
 
 
@@ -26,7 +25,7 @@ Mk.TabMainView = Ember.View.extend({
     for(idx = 0; idx < len; idx++) {
       view = childViews[idx];
       viewName = get(view, 'viewName');   
-      if ( view instanceof Mk.TabPaneView ) {
+      if ( Mk.TabPaneView.detect(view )  ) {
         panes[viewName] = view;     
       }
     }
@@ -72,7 +71,7 @@ Mk.TabMainView = Ember.View.extend({
 
 });
 
-Mk.TabPaneView = Ember.View.extend({
+Mk.TabPaneView = Em.Mixin.create({
   classNames: ['tab_pane']
 
 });
