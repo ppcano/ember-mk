@@ -12,6 +12,7 @@ require('ember-mk/initializers/view');
 require('ember-mk/mixins/animatable');
 require('ember-mk/mixins/scalable');
 require('ember-mk/mixins/scroll');
+require('ember-mk/mixins/presented_view');
 require('ember-mk/mixins/scroll_wrapper');
 
 

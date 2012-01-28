@@ -33,10 +33,18 @@
       #app {
         position:absolute; 
         background:yellow;
+
+        /*
         top:20%;
         left:20%;
         height:60%;
         width:60%;
+
+*/
+        top: 0%;bottom: 0%;
+        height:100%;
+        width:100%;
+
       }
 
       #initview {
@@ -109,7 +117,7 @@ minispade.require('ember-mk/main');
 
 var animation = {
   duration: 750,
-  animationStyle: Mk.AnimationStyle.FLIP_FROM_UP,
+  animationStyle: Mk.AnimationStyle.FLIP_FROM_LEFT,
   //animationStyle: Mk.AnimationStyle.FROM_LEFT,
   //animationStyle: Mk.AnimationStyle.NONE,
   easing: 'in'
@@ -143,7 +151,7 @@ App.bTap = Ember.Mixin.create({
 
 var counter = 0;
 
-App.ModalView = Mk.PresenterView.extend(  {
+App.ModalView = Mk.PresenterView.extend( Mk.PresentedView, {
 
   classNames: ['modal'],
   classNameBindings: ['odd', 'even'],

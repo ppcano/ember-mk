@@ -8,8 +8,7 @@ var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.
 /*
  * PresenterView gives the ability to present animated views, depending on Mk.AnimationStyle enum.  
  *
- * When you present a presenter view, the system creates a relationship between the presenter view 
- * that did the presenting and the presenter view that was presented, via presentedView and presentingView properties.
+ * When you present a view, the system creates a relationship via presentedView and presentingView properties.
  *
  * The ability to present a presenter views provide interesting ways to manage the flow of your application, 
  * creating on this way a chain of presenter views.
@@ -31,8 +30,8 @@ Mk.PresenterView = Em.ContainerView.extend(Mk.Animatable, {
   presentedView: null,
 
   /*
-  * Point to the PresenterView which presented this instance.
-  * This property will only be configured on PresenterView instances.
+  * Point to the PresentedView which presented this instance.
+  * This property will only be configured on Views with the PresentedView mixin.
   */
   presentingView: null,
 
@@ -149,10 +148,8 @@ Mk.PresenterView = Em.ContainerView.extend(Mk.Animatable, {
 
       view.set('_parentView', this );
 
-      if( view instanceof Mk.PresenterView )  {
-
+      if ( Mk.PresentedView.detect( view ) ) {
         view.set('presentingView', this );
-
       }
 
       var child =  this.get('child').get('childViews');
@@ -161,18 +158,8 @@ Mk.PresenterView = Em.ContainerView.extend(Mk.Animatable, {
 
     }
 
-
   },
 
-  didInsertElement: function(){
-    this._super();
-
-    var view = this.get('presentingView');
-    if ( view ) {
-      view.didPresentElement(this);
-    } 
-
-  },
 
   didPresentElement: function(view) {
 
@@ -183,7 +170,7 @@ Mk.PresenterView = Em.ContainerView.extend(Mk.Animatable, {
     var onCompletedFn = function() {
 
 
-       if (fn && 'function' != typeof fn) {
+       if (fn && 'function' == typeof fn) {
         fn();
        }
 
