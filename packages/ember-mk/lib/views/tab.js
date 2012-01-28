@@ -71,7 +71,7 @@ Mk.TabMainView = Ember.View.extend({
 
 });
 
-Mk.TabPaneView = Em.Mixin.create({
+Mk.TabPaneView = Ember.Mixin.create({
   classNames: ['tab_pane']
 
 });
