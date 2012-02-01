@@ -204,37 +204,6 @@ Em.GestureManager = Em.Object.extend({
   */
   _redispatchQueue: null,
 
-  _redispatchToNearestParentViewWaitingForTouches: function(evt) {
-    var foundManager = null,
-        successful = false;
-    var view = get(this.view, 'parentView');
-
-    while(view) {
-      var manager = get(view, 'eventManager');
-
-      if (manager !== undefined && manager !== null) {
-        var gestures = get(manager, 'gestures');
-
-        for (var i=0, l=gestures.length; i<l; i++) {
-
-          if (get(gestures[i], 'state') === Em.Gesture.WAITING_FOR_TOUCHES) {
-            foundManager = manager;
-          }
-        }
-
-        if (foundManager) {
-          successful = true;
-          foundManager.touchStart(evt, view);
-          break;
-        }
-      }
-      
-      view = get(view, 'parentView');
-    }
-
-    return successful;
-  },
-
   /**
     Relays touchStart events to all the gesture recognizers to the
     specified view
@@ -242,9 +211,7 @@ Em.GestureManager = Em.Object.extend({
     @return Boolen
   */
   touchStart: function(evt, view) {
-    if (this._redispatchToNearestParentViewWaitingForTouches(evt)) {
-      return;
-    }
+    //if (this._redispatchToNearestParentViewWaitingForTouches(evt)) {return;}
 
     return this._invokeEvent('touchStart',evt);
   },
@@ -281,19 +248,18 @@ Em.GestureManager = Em.Object.extend({
 
   /**
     Relays an event to the gesture recognizers. Used internally
-    by the touch event listeners.
+    by the touch event listeners. Propagates the event to the parentViews.
 
     @private
     @return Boolean
   */
   _invokeEvent: function(eventName, eventObject) {
 
-    var view = this.view;
+    var gestures = this.get('gestures')
+        , gesture
+        , handler
+        , result = true;
 
-    var gestures = get(this, 'gestures'),
-        gesture, result = true, wasCalled = false;
-
-    this._redispatchQueue = {};
 
     for (var i=0, l=gestures.length; i < l; i++) {
       gesture = gestures[i];
@@ -301,27 +267,60 @@ Em.GestureManager = Em.Object.extend({
 
       if (Em.typeOf(handler) === 'function') {
         result = handler.call(gesture, eventObject);
-        wasCalled = true;
       }
     };
-
-    if ( !wasCalled ) { // redispath the gesture to the parentView
-
-      var parentView = get(view, 'parentView');
-      if ( parentView ) {
-        var manager = get(parentView, 'eventManager');
-
-        if (manager !== undefined && manager !== null) {
-          manager._invokeEvent(eventName, eventObject, parentView);
-        }
-        
-      }
+    
+    // browser delivers the event to the DOM element
+    // bubble the event to the parentView
+    var parentView = this.view.get('parentView');
+    if ( parentView ) {
+      var manager = parentView.get('eventManager');
+      if ( manager ) { manager._invokeEvent(eventName, eventObject); }
+      
     }
-    this._flushReDispatchQueue();
+
     return result;
+
   },
 
-  /**
+
+  /** OBSOLETE
+  * don't like this implementation, gesture manager must not know about gesture states
+  */
+  _redispatchToNearestParentViewWaitingForTouches: function(evt) {
+    var foundManager = null,
+        successful = false;
+    var view = get(this.view, 'parentView');
+
+    while(view) {
+      var manager = get(view, 'eventManager');
+
+      if (manager !== undefined && manager !== null) {
+        var gestures = get(manager, 'gestures');
+
+        for (var i=0, l=gestures.length; i<l; i++) {
+
+          if (get(gestures[i], 'state') === Em.Gesture.WAITING_FOR_TOUCHES) {
+            foundManager = manager;
+          }
+        }
+
+        if (foundManager) {
+          successful = true;
+          foundManager.touchStart(evt, view);
+          break;
+        }
+      }
+      
+      view = get(view, 'parentView');
+    }
+
+    return successful;
+  },
+
+
+
+  /** OBSOLETE
     Similar to _invokeEvent, but instead of invoking the event
     to the gesture recognizers, it re-dispatches the event to the
     view. This method is used by the gesture recognizers when they
@@ -353,7 +352,7 @@ Em.GestureManager = Em.Object.extend({
     });
   },
 
-  /**
+  /** OBSOLETE
     This method is used internally by _invokeEvent. It re-dispatches
     events to the view if the gestures decided they want to.
   */
@@ -913,7 +912,6 @@ Em.Gesture = Em.Object.extend(
       }
     }
 
-    this.manager.redispatchEventToView('touchstart', evt);
   },
 
   /** @private */
@@ -923,7 +921,6 @@ Em.Gesture = Em.Object.extend(
     if (state === Em.Gesture.WAITING_FOR_TOUCHES || state === Em.Gesture.ENDED || state === Em.Gesture.CANCELLED) {
 
       // Nothing to do here
-      this.manager.redispatchEventToView('touchmove', evt);
       return;
     }
 
@@ -974,7 +971,6 @@ Em.Gesture = Em.Object.extend(
 
     }
 
-    this.manager.redispatchEventToView('touchmove', evt);
 
   },
 
@@ -1000,19 +996,14 @@ Em.Gesture = Em.Object.extend(
 
 
         // Discrete gestures use shouldEnd to either accept or decline the gesture.
-        // Discrete gestures need to cancel if they shouldn't end successfully
         if ( this.shouldEnd() ) {
 
           set(this, 'state', Em.Gesture.ENDED);
           this.didEnd();
           this.attemptGestureEventDelivery( get(this, 'name')+'End');
 
-        } else {
+        }  
 
-          set(this, 'state', Em.Gesture.CANCELLED);
-          this.didCancel();
-
-        }
       }
 
     }  else {
@@ -1033,9 +1024,6 @@ Em.Gesture = Em.Object.extend(
 
     }
 
-
-    this.manager.redispatchEventToView('touchend', evt);
-
     this._resetState();
   },
 
@@ -1052,9 +1040,7 @@ Em.Gesture = Em.Object.extend(
         this.notifyViewOfGestureEvent( get(this, 'name')+'Cancel');
       }
 
-    } else {
-      this.manager.redispatchEventToView('touchcancel', evt);
-    }
+    } 
 
     this._resetState();
 
@@ -1455,13 +1441,22 @@ var set = Em.set;
 
     var myview = Em.View.create({
       tapOptions: {
-        numberOfTaps: 3
+        numberOfRequiredTouches: 3
       }
       ...
     })
 
   And you can also specify the number of taps required for the gesture to fire using the numberOfTaps
   property.
+
+
+    var myview = Em.View.create({
+      tapOptions: {
+        numberOfTaps: 3,
+        delayBetweenTaps: 150
+      }
+      ...
+    })
 
   @extends Em.Gesture
 */
@@ -1476,11 +1471,12 @@ Em.TapGestureRecognizer = Em.Gesture.extend({
   */
   numberOfTaps: 1,
 
+  delayBetweenTaps: 500,
+
+  tapThreshold: 10,
+
   //..................................................
   // Private Methods and Properties
-
-  /** @private */
-  MULTITAP_DELAY: 150,
 
   /** @private */
   gestureIsDiscrete: true,
@@ -1489,28 +1485,45 @@ Em.TapGestureRecognizer = Em.Gesture.extend({
   _initialLocation: null,
 
   /** @private */
-  _waitingInterval: null,
+  _waitingTimeout: null,
 
   /** @private */
   _waitingForMoreTouches: false,
 
-  /** @private */
-  _moveThreshold: 10,
+  _internalTouches: null,
+
+  init: function(){
+    this._super();
+    this._internalTouches = Em.TouchList.create(); 
+    ember_assert( get(this, 'numberOfRequiredTouches')===1, 'TODO: still not prepared for higher number' );
+  },
 
   shouldBegin: function() {
+
     return get(this.touches,'length') === get(this, 'numberOfRequiredTouches');
+
   },
 
   didBegin: function() {
-    this._initialLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
-    if (get(this.touches,'length') < get(this, 'numberOfTaps')) {
-      this._waitingForMoreTouches = true;
-      this._waitingInterval = window.setInterval(this._intervalFired,this.MULTITAP_DELAY);
-    }
+    this._initialLocation = this.centerPointForTouches(get(this.touches,'touches'));
+    this._internalTouches.addTouch( this.touches[0] );
+
+    this._waitingForMoreTouches = get(this._internalTouches,'length') < get(this, 'numberOfTaps');
+
+    if ( this._waitingForMoreTouches ) {
+
+      var that = this;
+      this._waitingTimeout = window.setTimeout( function() {
+        that._waitingFired(that);
+      }, this.delayBetweenTaps);
+
+    } 
+
   },
 
   shouldEnd: function() {
+
     var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
     var x = this._initialLocation.x;
@@ -1520,24 +1533,46 @@ Em.TapGestureRecognizer = Em.Gesture.extend({
 
     var distance = Math.sqrt((x -= x0) * x + (y -= y0) * y);
 
-    return (Math.abs(distance) < this._moveThreshold) && !this._waitingForMoreTouches;
+    return (Math.abs(distance) < this.tapThreshold) && !this._waitingForMoreTouches;
+    
   },
+
+
 
   didEnd: function() {
+
+    window.clearTimeout( this._waitingTimeout );
+
+
+    // clean internalState
     this._initialLocation = null;
+    this._internalTouches.removeAllTouches();
+
   },
 
-  didCancel: function() {
+  _waitingFired: function() {
+
+    // clean internalState
     this._initialLocation = null;
+    this._internalTouches.removeAllTouches();
+
+    // set state for the gesture manager
+    set(this, 'state', Em.Gesture.CANCELLED);
+    var eventName = get(this, 'name')+'Cancel';
+    this.attemptGestureEventDelivery(eventName);
+    this._resetState(); 
+
   },
 
-  _intervalFired: function() {
-    window.clearInterval(this._waitingInterval);
-    _waitingForMoreTouches = false;
+
+  toString: function() {
+    return Em.TapGestureRecognizer+'<'+Em.guidFor(this)+'>';
   }
+
 });
 
 Em.Gestures.register('tap', Em.TapGestureRecognizer);
+
 
 })({});
 
@@ -1628,8 +1663,14 @@ Em.PressGestureRecognizer = Em.Gesture.extend({
     var nowTimestamp = get(this.touches,'timestamp');
     var isValidHoldPeriod = (nowTimestamp - this._initialTimestamp ) >= this.pressPeriodThreshold;
 
-    return  isValidDistance && isValidHoldPeriod;
+    var result = isValidDistance && isValidHoldPeriod;
 
+    if  ( !result ) {
+      set(this, 'state', Em.Gesture.CANCELLED);
+      this.didCancel();
+    }
+
+    return result;
   },
 
   didEnd: function() {
@@ -1772,6 +1813,8 @@ Em.TouchHoldGestureRecognizer = Em.Gesture.extend({
   shouldEnd: function() {
     
     this._disableEndFired();
+    set(this, 'state', Em.Gesture.CANCELLED);
+    this.didCancel();
 
     return  false;
 
