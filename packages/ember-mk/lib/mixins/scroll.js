@@ -106,35 +106,49 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
   },
 
 
+  // call this method if you want to reset the scroll position when the view is already inDOM state
   refresh: function(refreshParentProperties, refreshViewProperties) {
 
-    if ( refreshParentProperties ) {
-      var parent = this.$().parent();
-      set(this, '_scrollableHeight', parent.height());
-      set(this, '_scrollableWidth', parent.width());
-    }
+    var self = this; 
 
-    if ( refreshViewProperties ) {
-      set(this, '_height', this.$().outerHeight(true));
-      set(this, '_width', this.$().width());
-    }
+    Em.run.next(function() {
 
-    var positionX = this.get('_positionX');
-    var positionY = this.get('_positionY');
+      if ( self.get('state') === 'inDOM' ) {
 
+        if ( refreshParentProperties ) {
+          var parent = self.$().parent();
+          self.set('_scrollableHeight', parent.height());
+          self.set('_scrollableWidth', parent.width());
+        }
 
-    this.get('element').style['WebkitTransition'] = null;
+        if ( refreshViewProperties ) {
+          self.set('_height', self.$().outerHeight(true));
+          self.set('_width', self.$().width());
+        }
 
-    this._transformOnChange(positionX*(-1), positionY*(-1)  );
-    this._restartElasticEffect();
+        var positionX = self.get('_positionX');
+        var positionY = self.get('_positionY');
 
-    // todo: must test if the gestures was already recognized
-    if ( !this.scrollOptions.simultaneously ) { 
-      this.unblockGestureRecognizer();
-    }
+        self.get('element').style['WebkitTransition'] = null;
+
+        self._transformOnChange(positionX*(-1), positionY*(-1)  );
+        self._restartElasticEffect();
+
+        // todo: must test if the gestures was already recognized
+        if ( !self.scrollOptions.simultaneously ) { 
+          self.unblockGestureRecognizer();
+        }
+      }
+
+      //console.log( 'id ' + self.id + ' parent ' + self.$().parent().attr("id") ) ;
+      //console.log( ' width' +self.get('_width')  + ' scroll ' + self.get('_scrollableWidth' ) );
+      //console.log( ' height' +self.get('_height')  + ' scroll ' + self.get('_scrollableHeight' ) );
+
+    });
 
 
   }, 
+
 
 
   /*
