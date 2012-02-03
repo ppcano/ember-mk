@@ -11,6 +11,7 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
   defaultHidden: true,
   duration: 1000,
   animationStyle: Mk.AnimationStyle.FROM_RIGHT,
+  stopEventHandling: true,
 
 
   didInsertElement: function() {
@@ -83,7 +84,7 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
       var val = ( this._isHorizontalAnimation() ) ? {x: position}:{y: position};
 
-      this.animate({duration: this.duration}, val );
+      this.animate({duration: this.duration, stopEventHandling: this.stopEventHandling}, val );
       this.set('position', position);
 
     } else {
