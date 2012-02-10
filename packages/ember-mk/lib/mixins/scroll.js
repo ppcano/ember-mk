@@ -116,6 +116,12 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
       if ( self.get('state') === 'inDOM' ) {
 
         if ( refreshParentProperties ) {
+
+          var parentView = self.get('parentView');
+          if ( Mk.ScrollWrapper.detect(parentView)  ) {
+            parentView.setUpDimensions();  
+          }
+
           var parent = self.$().parent();
           self.set('_scrollableHeight', parent.height());
           self.set('_scrollableWidth', parent.width());
