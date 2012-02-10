@@ -1,4 +1,5 @@
 require("ember-mk/core");
+
 //  improve lifecycle --> depending on Application?
 Mk.AnimationManager = Em.Object.create({
 
@@ -45,7 +46,6 @@ Mk.AnimationManager = Em.Object.create({
 
   stopEventHandling: function() {
     Ember.EventDispatcherEnabled = false;
-
   },
 
   run: function(animation) {
@@ -58,20 +58,20 @@ Mk.AnimationManager = Em.Object.create({
       animation.options.duration = 0;
     }
 
-    var that = this;
+    var self = this;
 
-    setTimeout(function(){
+    Ember.run.later(function(){
 
       if ( animation.options.stopEventHandling ) {
-        that.stopEventHandling();
+        self.stopEventHandling();
       }
 
       animation.fn( animation.view );
 
-      setTimeout(function(){
+      Ember.run.later(function(){
 
         if ( animation.options.stopEventHandling ) 
-          that.startEventHandling();
+          self.startEventHandling();
 
         // OJO: testing think about, back animations can be immediately
         if ('function' == typeof animation.callback)
@@ -82,12 +82,12 @@ Mk.AnimationManager = Em.Object.create({
       // otherwise, other animations cannot began
       if ( !animation.options.immediately ) {
 
-        that.endCurrentAnimation();
-        that.startNewAnimation();
+        self.endCurrentAnimation();
+        self.startNewAnimation();
 
       }
 
-    }, animation.delay);
+    }, animation.options.delay);
 
   }
 

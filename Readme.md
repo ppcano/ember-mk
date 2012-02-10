@@ -25,6 +25,12 @@ Install gems with _bundle install_ and execute _rake_ task, ember-mk  will be cr
 
 Import the js and css files to your project. Also include jquery.transit.js on your project.
 
+##Packages
+
+As well as, jquery and ember, the project requires [sproutcore/ember-touch](https://github.com/ppcano/sproutcore-touch)
+
+If you want to test against other ember/jquery/ember-touchs version, deployed the js on the examples/assets directory.
+
 ##Animations
 
 Currently, animations are done with jquery.transit.js. You can also use your own
@@ -38,11 +44,4 @@ http://localhost:9292/examples
 
 ##Unit Tests
 
-run __bundle exec rackup__ 
-
-Test the whole suite  http://localhost:9292/examples/test.html
-
-Test only a specific test file (add test param: test location without extension) http://localhost:9292/examples/test.html?test=system/view_test
-
-If you want to test against other ember/jquery/ember-touchs version, deployed the js on the examples/assets directory.
-
+Still pending...
