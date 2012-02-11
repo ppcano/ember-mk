@@ -2,9 +2,6 @@
 require("ember-mk/core");
 require("ember-mk/mixins/animatable");
 
-var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
-
-
 
 Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
@@ -168,7 +165,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     //var height, width;  
     //var parentId = this.$().parent().attr("id");
     var parent = this.$().parent();
-    this.id = '#'+get(this, 'elementId');
+    this.id = '#'+this.get('elementId');
 
 
     // TODO: all the ancestors cannot have height 100%--> because returns window.height
@@ -176,20 +173,20 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     // http://forum.jquery.com/topic/how-to-solve-the-100-height-problem    
     
     if ( !this.get('_scrollableHeight' ) ){
-      set(this, '_scrollableHeight', parent.height());
+      this.set('_scrollableHeight', parent.height());
     }
 
     if ( !this.get('_scrollableWidth' ) ){
-      set(this, '_scrollableWidth', parent.width());
+      this.set('_scrollableWidth', parent.width());
     }
 
     if ( !this.get('_height' ) ){
-      set(this, '_height', this.$().outerHeight(true));
+      this.set('_height', this.$().outerHeight(true));
     }
 
     if ( !this.get('_width' ) ){
       //set(this, '_width', this.$().outerWidth(true)); // takes parentWidth when 100%
-      set(this, '_width', this.$().width());
+      this.set('_width', this.$().width());
     }
 
      //console.log( 'id ' + this.id + ' parent ' + this.$().parent().attr("id") ) ;
@@ -198,11 +195,42 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
   },
 
+  // when the user touch the screen the current animation will be stopped
+  touchStart: function() {
+
+		var regex = /matrix\(\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*\,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)/;
+    var transform = window.getComputedStyle( this.get('element') ).webkitTransform;
+    var match = regex.exec(transform);
+
+    if(match){
+
+      this.set('_positionX', Math.round( match[1] ) );
+      this.set('_positionY', Math.round( match[2] ) );
+
+      var properties = {};
+      if ( this.scrollOptions.vScroll ) {
+        properties['y'] = this.get('_positionY'); 
+      }
+      if ( this.scrollOptions.hScroll ) {
+        properties['x'] = this.get('_positionX'); 
+      }
+
+      // this will stop the current animation
+      this.get('element').style['WebkitTransition'] = null;
+      // this will setup the coordinates on the position the animation
+      // was stopped
+      this.$().css(properties);
+
+    }
+
+
+
+  },
 
   panStart: function(recognizer){
 
-    this._restartElasticEffect();
 
+    this._restartElasticEffect();
     this._debugRecognizer('panStart', recognizer );
     var translation = recognizer.get('translation');
     this._transformOnChange( translation.x, translation.y );
@@ -225,7 +253,6 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     this._applyElasticEffect(translation.x, translation.y);
     this._correctPosition();
 
-
     if ( !this.scrollOptions.simultaneously ) { 
       this.unblockGestureRecognizer();
     }
@@ -244,17 +271,23 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
   _applyElasticEffect: function(positionX, positionY){
 
     // it does not move
+    //
     this._transformPosition(positionX, positionY);
+
+    //this._debugPosition('ELASTIC (1)');
    
-    var time = Date.now() - get(this, '_startTimestamp');
+    var time = Date.now() - this.get('_startTimestamp');
 
-    var distanceY = get(this, '_distanceY');
-    var distanceX = get(this, '_distanceX');
+    var distanceY = this.get('_distanceY');
+    var distanceX = this.get('_distanceX');
 
-    var newPositionY = this.scrollOptions.velocity*distanceY/time * this.get('_height');
-    var newPositionX = this.scrollOptions.velocity*distanceX/time * this.get('_width');
+    var addToPositionY = this.scrollOptions.velocity*distanceY/time * this.get('_height');
+    var addToPositionX = this.scrollOptions.velocity*distanceX/time * this.get('_width');
 
-    this._transformOnChange( newPositionX,  newPositionY, this.scrollOptions.duration );
+    //console.log('*** addToPositionY '+addToPositionY );
+    this._transformOnChange( addToPositionX,  addToPositionY, this.scrollOptions.duration );
+
+    //this._debugPosition('ELASTIC (3)');
 
   },
 
@@ -302,24 +335,25 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
   _restartElasticEffect: function(){
 
-    set(this, '_distanceY', 0);
-    set(this, '_distanceX', 0);
-    set(this, '_startTimestamp', Date.now() );
+    this.set('_distanceY', 0);
+    this.set('_distanceX', 0);
+    this.set('_startTimestamp', Date.now() );
 
   },
 
-  _transformOnChange: function(positionX, positionY, duration, properties) {
+  _transformOnChange: function(positionX, positionY, duration) {
     
     this._transformPosition(positionX, positionY);
 
+    var properties = {};
 
     if ( !duration ) {
       duration = undefined;
+    } else {
+      //https://github.com/rstacruz/jquery.transit/issues/22
+      properties['queue'] = false; 
     }
 
-    if ( !properties ) {
-      properties = {};
-    }
 
     if ( this.scrollOptions.vScroll ) {
       properties['y'] = this.get('_positionY'); 
@@ -330,8 +364,6 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     }
 
     this.animate({duration: duration}, properties); 
-
-    //console.log( ' distanceY ' + distanceY + ' positionY ' +positionY );
     
   },
 
@@ -383,7 +415,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
         this.animate({duration: this.scrollOptions.duration}, {y: newPositionY}); 
 
-        set(this,'_positionY', newPositionY);
+        this.set('_positionY', newPositionY);
 
       } 
     }
@@ -396,24 +428,32 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
         this.animate({duration: this.scrollOptions.duration}, {x: newPositionX}); 
 
-        set(this,'_positionX', newPositionX);
+        this.set('_positionX', newPositionX);
 
       } 
     }
 
   },
 
+  _debugPosition: function(name) {
+
+    if ( !name ) name = '';
+    console.log( name +' position X ' + this.get('_positionX') + ' Y ' + this.get('_positionY') );
+
+  },
+
   _debugRecognizer: function(name, r) {
 
     //console.log(name + '  ' + this.toString() );
+    //
     /*
-
-    var change = get(r, 'translation')
-    var positionX = get(this, '_positionX');
-    var positionY = get(this, '_positionY');
+    var change = r.get('translation')
+    var positionX = this.get('_positionX');
+    var positionY = this.get('_positionY');
     //console.log( name+ ' x ('+r.translation.x+') pos ('+positionX+')' );
     console.log( name+ ' y ('+r.translation.y+') pos ('+positionY+')' );
-     */
+    */
+
   }
 
 });

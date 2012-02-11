@@ -195,24 +195,12 @@ Em.GestureManager = Em.Object.extend({
   view: null,
 
   /**
-    Internal hash used to keep a list of the events that need to be
-    re-dispatched to the views. It's used so we don't re-dispatch
-    the same event multiple times to the same view.
-
-    @default null
-    @type Array
-  */
-  _redispatchQueue: null,
-
-  /**
     Relays touchStart events to all the gesture recognizers to the
     specified view
 
     @return Boolen
   */
   touchStart: function(evt, view) {
-    //if (this._redispatchToNearestParentViewWaitingForTouches(evt)) {return;}
-
     return this._invokeEvent('touchStart',evt);
   },
 
@@ -260,15 +248,26 @@ Em.GestureManager = Em.Object.extend({
         , handler
         , result = true;
 
+    // view could response directly to touch events
+    handler = this.view[eventName];
+    if (Em.typeOf(handler) === 'function') {
+      handler.call(this.view, eventObject);
+    }
 
     for (var i=0, l=gestures.length; i < l; i++) {
       gesture = gestures[i];
       handler = gesture[eventName];
 
       if (Em.typeOf(handler) === 'function') {
-        result = handler.call(gesture, eventObject);
+
+        var gestureDelegate = gesture.get('delegate');
+        if ( !gestureDelegate || gestureDelegate.shouldReceiveTouch( gesture, this.view, eventObject )  ) {
+          result = handler.call(gesture, eventObject);
+        } 
+
+
       }
-    };
+   };
     
     // browser delivers the event to the DOM element
     // bubble the event to the parentView
@@ -281,97 +280,6 @@ Em.GestureManager = Em.Object.extend({
 
     return result;
 
-  },
-
-
-  /** OBSOLETE
-  * don't like this implementation, gesture manager must not know about gesture states
-  */
-  _redispatchToNearestParentViewWaitingForTouches: function(evt) {
-    var foundManager = null,
-        successful = false;
-    var view = get(this.view, 'parentView');
-
-    while(view) {
-      var manager = get(view, 'eventManager');
-
-      if (manager !== undefined && manager !== null) {
-        var gestures = get(manager, 'gestures');
-
-        for (var i=0, l=gestures.length; i<l; i++) {
-
-          if (get(gestures[i], 'state') === Em.Gesture.WAITING_FOR_TOUCHES) {
-            foundManager = manager;
-          }
-        }
-
-        if (foundManager) {
-          successful = true;
-          foundManager.touchStart(evt, view);
-          break;
-        }
-      }
-      
-      view = get(view, 'parentView');
-    }
-
-    return successful;
-  },
-
-
-
-  /** OBSOLETE
-    Similar to _invokeEvent, but instead of invoking the event
-    to the gesture recognizers, it re-dispatches the event to the
-    view. This method is used by the gesture recognizers when they
-    want to let the view respond to the original events.
-  */
-  redispatchEventToView: function(eventName, eventObject) {
-    var queue = this._redispatchQueue;
-    var view = this.view;
-
-    if (queue[eventName] === undefined) {
-      queue[eventName] = [];
-    }
-    else {
-      var views = queue[eventName];
-
-      for (var i=0, l=views.length; i<l; i++) {
-        if (view === views[i].view) {
-          return;
-        }
-      }
-    }
-
-    var originalEvent = null;
-    if (eventObject && eventObject.originalEvent) originalEvent = eventObject.originalEvent;
-
-    queue[eventName].push({
-      view: view,
-      originalEvent: originalEvent
-    });
-  },
-
-  /** OBSOLETE
-    This method is used internally by _invokeEvent. It re-dispatches
-    events to the view if the gestures decided they want to.
-  */
-  _flushReDispatchQueue: function() {
-    var queue = this._redispatchQueue;
-
-    for (var eventName in queue) {
-      var views = queue[eventName];
-
-      for (var i=0, l=views.length; i<l; i++) {
-        var view = views[i].view;
-        var event = jQuery.Event(eventName);
-
-        event.originalEvent = views[i].originalEvent;
-
-        // Trigger event so it bubbles up the hierarchy
-        view.$().trigger(event, this);
-      }
-    }
   }
 
 });
@@ -696,15 +604,30 @@ Em.Gesture = Em.Object.extend(
   */
   numberOfRequiredTouches: 1,
 
-  /** 
-    View which received the event to trigger the Em.Gesture.BEGAN state.
-
-    @type Em.View
+	/**
+   Assign a gesture delegate based on the delegate name.
   */
+  delegateName: null,
+ 
+  /*	
+	Apply a delegate to customize an application's gesture-recognition behavior. 
+  */
+  delegate: null, 
+
 
   init: function() {
     this._super();
     this.touches = Em.TouchList.create();
+
+    var delegateName =  this.get('delegateName');
+    var delegate =  this.get('delegate');
+
+    if (!delegate && delegateName ) {
+      var delegate = Em.GestureDelegates.find(delegateName);
+      ember_assert('empty delegate, attempting to set up delegate based on delegateName', delegate);
+      this.set('delegate', delegate);
+    }
+
   },
 
   //..............................................
@@ -2084,6 +2007,76 @@ Em.Gestures.register('swipe', Em.SwipeGestureRecognizer);
 
 (function(exports) {
 // ==========================================================================
+// Project:  Ember Touch 
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+
+Em.GestureDelegates = Em.Object.create({
+
+  _delegates: {},
+
+  add: function(delegate) {
+    this._delegates[ delegate.get('name') ] = delegate;
+  },
+
+  find: function( name ) {
+    return this._delegates[name];
+  },
+
+  clear: function() {
+    this._delegates = {};
+  }
+
+
+});
+
+
+
+})({});
+
+
+(function(exports) {
+// ==========================================================================
+// Project:  Ember Touch 
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+/*
+ Delegate implements the logic of your application's gesture-recognition behavior.
+ Set up your gestures to use a GestureDelegate to coordinate the gesture recognition based 
+ on the current status of your Application. 
+ */
+Em.GestureDelegate = Em.Object.extend({
+
+  /*
+  * Name of the gestureDelegate.
+	* It will be used on gestureOptions to assign a gestureDelegate to a specific gesture.
+  */
+  name: null,
+
+  init: function(){
+    this._super();
+  },
+
+	/*
+  Ask the delegate if a gesture recognizer should receive a touch event.
+  */
+  shouldReceiveTouch: function(gesture, view, event) {
+    return true; 
+  }
+
+
+});
+
+
+})({});
+
+
+(function(exports) {
+// ==========================================================================
 // Project:  Ember Touch
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
@@ -2147,7 +2140,7 @@ Em.View.reopen(
         }
       }
       
-      //gestures: gestures,
+
       set(manager, 'view', this);
       set(manager, 'gestures', gestures);
 
@@ -2170,6 +2163,8 @@ Em.View.reopen(
 
 
 (function(exports) {
+
+
 
 
 
