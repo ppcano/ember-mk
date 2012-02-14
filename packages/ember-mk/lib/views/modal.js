@@ -52,16 +52,9 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
         }
 
-
-        this.animate({},val, function(me) {
-                   
-          me.set('isVisible', true);
-          me.set('position', position);
-
-        }); 
-
-
-
+        this.$().css(val); 
+        this.set('isVisible', true);
+        this.set('position', position);
 
       }
 
@@ -69,7 +62,7 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
   },
 
-  toogle: function() {
+  toogle: function(fn) {
 
     if ( this.animationStyle !== Mk.AnimationStyle.NONE ) {
 
@@ -84,13 +77,20 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
       var val = ( this._isHorizontalAnimation() ) ? {x: position}:{y: position};
 
-      this.animate({duration: this.duration, stopEventHandling: this.stopEventHandling}, val );
+      this.animate({duration: this.duration, stopEventHandling: this.stopEventHandling}, val, function(me) {
+
+        if ( fn ) fn(me);
+                 
+                 
+      });
       this.set('position', position);
 
     } else {
 
       var isVisible = this.get('isVisible'); 
       this.set('isVisible', !isVisible);
+
+      if ( fn ) fn(this);
 
     }
 
