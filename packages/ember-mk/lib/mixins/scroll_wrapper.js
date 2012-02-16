@@ -31,8 +31,9 @@ Mk.ScrollWrapper = Ember.Mixin.create({
       
     });
 
-
-    var wHeight = window.outerHeight;
+    // innerHeight: works in safari browser and phonegap ios app
+    // TODO: move to window.mkHeight prototype
+    var wHeight = window.innerHeight;
     var height = wHeight-elementHeights;
 
     /*
