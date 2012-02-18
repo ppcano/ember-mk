@@ -79,7 +79,7 @@ Mk.TabPaneView = Ember.Mixin.create({
 
 Mk.TabView = Ember.View.extend({
 
-  tabsContainer: SC.computed(function() {
+  tabsContainer: Em.computed(function() {
     return this.nearestInstanceOf(Mk.TabMainView);
   }).property(),
 

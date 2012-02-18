@@ -8,7 +8,7 @@ Mk.NavigationItemView = Em.Mixin.create({
 
   classNames: ['nav_item'],
 
-  rootView: SC.computed(function() {
+  rootView: Em.computed(function() {
     return this.nearestInstanceOf(Mk.NavigationView);
   }).property(),
 
