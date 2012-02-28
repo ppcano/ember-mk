@@ -21,7 +21,7 @@ The main idea behind:
 
 ## Building Ember-mk
 
-Install gems with _bundle install_ and execute _rake_ task, ember-mk  will be created on the _dist_ directory.
+Install/Updates gems with _bundle install_ or _bundle update_ and execute _rake_ task, ember-mk  will be created on the _dist_ directory.
 
 Import the js and css files to your project. Also include jquery.transit.js on your project.
 
@@ -41,6 +41,15 @@ animations by just giving a function to the _animate_ view method.
 run __bundle exec rackup__ 
 
 http://localhost:9292/examples
+
+
+##Dependencies
+
+Current configuration of the Assetfile supports: 
+
+    rake-pipeline-web-filters (0.6.0)
+    rake-pipeline (0.6.0)
+
 
 ##Unit Tests
 
