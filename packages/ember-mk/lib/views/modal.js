@@ -29,7 +29,9 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
         if ( this._isHorizontalAnimation() ) {
 
-          this.move = $(window).width();
+          if ( !this.move ) {
+            this.move = $(window).width();
+          }
           position = this.move;
 
 
@@ -41,7 +43,9 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
         } else {
 
-          this.move = $(window).height();
+          if ( !this.move ) {
+            this.move = $(window).height();
+          }
           position = this.move;
 
           if ( this.animationStyle  === Mk.AnimationStyle.FROM_UP ) {
