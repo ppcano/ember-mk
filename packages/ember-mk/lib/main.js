@@ -6,7 +6,6 @@ require('ember-mk/animation/animation_style');
 require('ember-mk/animation/animation_manager');
 
 require('ember-mk/initializers/event_dispatcher');
-require('ember-mk/initializers/view');
 
 
 require('ember-mk/mixins/animatable');

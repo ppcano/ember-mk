@@ -95,10 +95,17 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     this._super();
   },
 
-  didInsertElementEnd: function() {
+  didInsertElement: function() {
     
-    this._setup_dimensions();
     this._super();
+
+    var self = this;
+    this.$().load(function(el) {
+
+      self._setup_dimensions();
+
+    });
+
 
   },
 
