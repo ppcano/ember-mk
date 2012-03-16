@@ -12,11 +12,14 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
   duration: 1000,
   animationStyle: Mk.AnimationStyle.FROM_RIGHT,
   stopEventHandling: true,
+  isVisibleModal: false,
 
 
   didInsertElement: function() {
 
     this._super();
+
+    var isVisibleModal;
 
     if ( this.defaultHidden ) {
 
@@ -24,8 +27,7 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
       if ( this.animationStyle !== Mk.AnimationStyle.NONE ) {
 
-        var position;
-        var val;
+        var position, val;
 
         if ( this._isHorizontalAnimation() ) {
 
@@ -62,7 +64,16 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
 
       }
 
+      isVisibleModal = false;
+
+    } else {
+
+      isVisibleModal = true;
+
     }
+
+
+    this.set('isVisibleModal', isVisibleModal );
 
   },
 
@@ -80,10 +91,14 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
       }
 
       var val = ( this._isHorizontalAnimation() ) ? {x: position}:{y: position};
+      var self = this;
 
       this.animate({duration: this.duration, stopEventHandling: this.stopEventHandling}, val, function(me) {
 
         if ( fn ) fn(me);
+
+
+        self.set('isVisibleModal', position === 0 );
                  
                  
       });
@@ -95,6 +110,8 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
       this.set('isVisible', !isVisible);
 
       if ( fn ) fn(this);
+
+      this.set('isVisibleModal', !isVisible);
 
     }
 
