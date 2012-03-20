@@ -98,12 +98,18 @@ App = Em.Application.create({
 App.CollectionView = Em.CollectionView.extend(Mk.ScrollMixin, {
 
   scrollOptions: {
+    enableLogging: true,
     hScroll: false,
     vScroll: true,
     duration: 1500,
     velocity: 0.05,
     simultaneously: false,
     initThreshold: 10
+  },
+
+  didInsertElement: function() {
+    this.setupScroll(true, true); 
+    this._super();
   }
     
 });

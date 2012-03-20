@@ -105,6 +105,7 @@ App.Images = images;
 App.CarouselView = Em.CollectionView.extend( Mk.ScrollMixin, {
     
     scrollOptions: {
+      enableLogging: false,
       hScroll: true,
       vScroll: false,
       duration: 500,
@@ -120,17 +121,13 @@ App.CarouselView = Em.CollectionView.extend( Mk.ScrollMixin, {
     didInsertElement: function() {
 
       var parentWidth = this.$().parent().outerWidth(true);
-      var content = this.get('content');
-
-      //console.log( this.$().parent() );
-      //console.log( 'width: --->  ' + parentWidth);
-
-      var width = content.length*parentWidth;
+      var width = this.get('content').length*parentWidth;
 
       this.$().width(width);
-      this.set('_width', width); // for scrolling
 
+      this.setupScroll(true, true);
       this._super();
+      
 
     }
 

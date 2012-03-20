@@ -1,4 +1,3 @@
-
 require("ember-mk/core");
 require("ember-mk/mixins/animatable");
 
@@ -13,9 +12,13 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
 
     exceeded: true,
 
+    enableLogging: false,
+
     simultaneously: true,
     initThreshold: 10
+
   },
+
 
   panOptions: {
     numberOfRequiredTouches: 1,
@@ -73,6 +76,10 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
       this.scrollOptions.exceeded = true;
     }
 
+    if ( this.scrollOptions.enableLogging === undefined ) {
+      this.scrollOptions.enableLogging = false;
+    }
+
 
 
     pan["simultaneously"] = this.scrollOptions.simultaneously;
@@ -95,46 +102,24 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     this._super();
   },
 
-  didInsertElement: function() {
-    
-    this._super();
-
-    var self = this;
-    this.$().load(function(el) {
-
-      self._setup_dimensions();
-
-    });
-
-
-  },
-
 
   // call this method if you want to reset the scroll position when the view is already inDOM state
-  refresh: function(refreshParentProperties, refreshViewProperties) {
+  refreshScroll: function(refreshViewProperties, refreshWrapperProperties) {
 
     var self = this; 
+
+    if ( refreshViewProperties === undefined ) {
+      refreshViewProperties = true;
+      refreshWrapperProperties = false;
+    } else if ( refreshWrapperProperties === undefined ) {
+      refreshWrapperProperties = false;
+    }
 
     Em.run.next(function() {
 
       if ( self.get('state') === 'inDOM' ) {
 
-        if ( refreshParentProperties ) {
-
-          var parentView = self.get('parentView');
-          if ( Mk.ScrollWrapper.detect(parentView)  ) {
-            parentView.setUpDimensions();  
-          }
-
-          var parent = self.$().parent();
-          self.set('_scrollableHeight', parent.height());
-          self.set('_scrollableWidth', parent.width());
-        }
-
-        if ( refreshViewProperties ) {
-          self.set('_height', self.$().outerHeight(true));
-          self.set('_width', self.$().width());
-        }
+        self.setupScroll(refreshViewProperties, refreshWrapperProperties);
 
         var positionX = self.get('_positionX');
         var positionY = self.get('_positionY');
@@ -148,18 +133,12 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
         if ( !self.scrollOptions.simultaneously ) { 
           self.unblockGestureRecognizer();
         }
-      }
 
-      //console.log( 'id ' + self.id + ' parent ' + self.$().parent().attr("id") ) ;
-      //console.log( ' width' +self.get('_width')  + ' scroll ' + self.get('_scrollableWidth' ) );
-      //console.log( ' height' +self.get('_height')  + ' scroll ' + self.get('_scrollableHeight' ) );
+      }
 
     });
 
-
   }, 
-
-
 
   /*
  * Dimensions can be setup on view declaration.
@@ -167,38 +146,42 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
  */
 
   // todo: when content is updated, setup_dimensions refresh
-  _setup_dimensions: function() {
+  setupScroll: function(viewProperties, wrapperProperties) {
 
-    //var height, width;  
-    //var parentId = this.$().parent().attr("id");
-    var parent = this.$().parent();
-    this.id = '#'+this.get('elementId');
 
+    var v = this.scrollOptions.vScroll
+      h = this.scrollOptions.hScroll;
 
     // TODO: all the ancestors cannot have height 100%--> because returns window.height
     // it should be one ( extend to its child ), which returns the correct height ( either parent or parent.parent...)
     // http://forum.jquery.com/topic/how-to-solve-the-100-height-problem    
+    if ( wrapperProperties ) { 
+      var parent = this.$().parent();
+
+      if ( v ) {
+        this.set('_scrollableHeight', parent.height());
+      }
+
+      if ( h ) {
+        this.set('_scrollableWidth', parent.width());
+      }
+    }
+
+    if ( viewProperties ) {
+
+      if ( v ) {
+        //this.set('_height', this.$().outerHeight(true));
+        this.set('_height', this.$().height());
+      }
+
+      if ( h ) {
+        this.set('_width', this.$().width());
+      }
+
+    }
+
+    this._log_dimensions('setup');
     
-    if ( !this.get('_scrollableHeight' ) ){
-      this.set('_scrollableHeight', parent.height());
-    }
-
-    if ( !this.get('_scrollableWidth' ) ){
-      this.set('_scrollableWidth', parent.width());
-    }
-
-    if ( !this.get('_height' ) ){
-      this.set('_height', this.$().outerHeight(true));
-    }
-
-    if ( !this.get('_width' ) ){
-      //set(this, '_width', this.$().outerWidth(true)); // takes parentWidth when 100%
-      this.set('_width', this.$().width());
-    }
-
-     //console.log( 'id ' + this.id + ' parent ' + this.$().parent().attr("id") ) ;
-     //console.log( ' width' +this.get('_width')  + ' scroll ' + this.get('_scrollableWidth' ) );
-     //console.log( ' height' +this.get('_height')  + ' scroll ' + this.get('_scrollableHeight' ) );
 
   },
 
@@ -461,6 +444,26 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     console.log( name+ ' y ('+r.translation.y+') pos ('+positionY+')' );
     */
 
+  },
+
+  _log_dimensions: function(name) {
+
+
+    if ( this.scrollOptions.enableLogging ) { 
+
+      console.log( name + '-->  id ' + this.get('elementId') + ' parent ' + this.$().parent().attr("id") ) ;
+
+      if ( this.scrollOptions.hScroll )  {
+        console.log( ' width ' +this.get('_width')  + ' - ' + this.get('_scrollableWidth' ) );
+      }
+
+      if ( this.scrollOptions.vScroll )  {
+        console.log( ' height ' +this.get('_height')  + ' - ' + this.get('_scrollableHeight' ) );
+      }
+
+    }
+
   }
+
 
 });

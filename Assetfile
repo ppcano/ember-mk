@@ -6,13 +6,14 @@ output "examples/source"
 
 
 input "packages" do
-  match "*/{lib,tests}/**/*.js" do
+#  match "*/{lib,tests}/**/*.js" do
+  match "*/lib/**/*.js" do
     minispade :rewrite_requires => true, :module_id_generator => proc { |input|
       id = input.path.dup
       id.sub!('/lib/', '/')
       id.sub!(/\.js$/, '')
       #id.sub!(/\/main$/, '')
-      id.sub!('/tests', '/~tests')
+      #id.sub!('/tests', '/~tests')
       id
     }
 
