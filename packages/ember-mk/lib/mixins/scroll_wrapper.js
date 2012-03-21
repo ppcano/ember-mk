@@ -7,6 +7,7 @@ var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.
 Mk.ScrollWrapper = Ember.Mixin.create({
 
   heights: [],
+  enableLogging: false,
 
   didInsertElement: function() {
     this._super();
@@ -16,7 +17,8 @@ Mk.ScrollWrapper = Ember.Mixin.create({
   setUpDimensions: function() {
 
     var elementHeight 
-      , elementHeights = 0;
+      , elementHeights = 0
+      , self = this;
 
     this.heights.forEach( function(item) {
            
@@ -27,22 +29,17 @@ Mk.ScrollWrapper = Ember.Mixin.create({
       ember_assert('scroll wrapper mixin (' + item + ') not found ', !!elementHeight);
 
       elementHeights+=elementHeight;
-      //console.log('item ' + item + ' elementHeight ' + elementHeight + ' total ' + elementHeights  );
+
+      if ( self.enableLogging ) {
+        console.log('item ' + item + ' elementHeight ' + elementHeight + ' total ' + elementHeights  );
+      }
       
     });
 
     // innerHeight: works in safari browser and phonegap ios app
     // TODO: move to window.mkHeight prototype
-    var wHeight = window.innerHeight;
-    var height = wHeight-elementHeights;
+    var height = window.innerHeight-elementHeights;
 
-    /*
-    console.log( '--------------' );
-    console.log( wHeight );
-    console.log( elementHeights );
-    console.log( height );
-    */
-    // scrolling
     this.$().height(height); 
 
   }

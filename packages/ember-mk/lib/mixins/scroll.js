@@ -433,16 +433,22 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
   },
 
   _debugRecognizer: function(name, r) {
+    
+    if ( this.scrollOptions.enableLogging ) { 
 
-    //console.log(name + '  ' + this.toString() );
-    //
-    /*
-    var change = r.get('translation')
-    var positionX = this.get('_positionX');
-    var positionY = this.get('_positionY');
-    //console.log( name+ ' x ('+r.translation.x+') pos ('+positionX+')' );
-    console.log( name+ ' y ('+r.translation.y+') pos ('+positionY+')' );
-    */
+      var change = r.get('translation')
+
+      if ( this.scrollOptions.hScroll )  {
+        var positionX = this.get('_positionX');
+        console.log( name+ ' x ('+r.translation.x+') pos ('+positionX+')' );
+      }
+
+      if ( this.scrollOptions.vScroll )  {
+        var positionY = this.get('_positionY');
+        console.log( name+ ' y ('+r.translation.y+') pos ('+positionY+')' );
+      }
+
+    }
 
   },
 
