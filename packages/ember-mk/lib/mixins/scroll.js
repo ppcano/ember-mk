@@ -170,8 +170,7 @@ Mk.ScrollMixin = Em.Mixin.create(Mk.Animatable, {
     if ( viewProperties ) {
 
       if ( v ) {
-        //this.set('_height', this.$().outerHeight(true));
-        this.set('_height', this.$().height());
+        this.set('_height', this.$().outerHeight(true));
       }
 
       if ( h ) {
