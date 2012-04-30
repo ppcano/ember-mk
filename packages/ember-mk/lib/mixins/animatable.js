@@ -8,6 +8,7 @@ require("ember-mk/animation/animation_manager");
 //
 // animation property can be setup via: 
 // 1) functions
+//    you must call willAnimate/didAnimate
 //
 //      this.animate({duration: duration}, function(me) {
 //
@@ -20,10 +21,30 @@ require("ember-mk/animation/animation_manager");
 //
 // 2) css properties (see jquery.transit API)
 //
-//
+
 Mk.Animatable = Em.Mixin.create({
+  
+
+  willAnimate: function(stopEventHandling) {
+
+    if ( stopEventHandling ) Ember.EventDispatcherEnabled = false;
+
+  },
+
+  didAnimate: function(stopEventHandling) {
+
+    if ( stopEventHandling ) Ember.EventDispatcherEnabled = true;
+
+  },
 
   animate: function(options, animation, easing, callback) {
+
+    var fnCallback
+      , fn
+      , self = this
+      , stopEventHandling = options.stopEventHandling 
+      , duration = options.duration;
+
 
     if ( typeof easing == 'function') {
       callback = easing;
@@ -35,16 +56,26 @@ Mk.Animatable = Em.Mixin.create({
     // wrapping the api to jquery.transit
     if ( typeof animation != 'function') {
 
-      var fn
-        , ease = easing
-        , duration = options.duration 
+      var ease = easing
         , properties = animation;
 
 
       if ( duration ) {
 
+
+        fnCallback = function() {
+
+          self.didAnimate( stopEventHandling );
+          if ( callback ) callback();
+
+        };
+
+
         fn = function( me ) {
-          me.$().transition(properties, duration, easing);
+
+          self.willAnimate( stopEventHandling );
+          me.$().transition(properties, duration, easing, fnCallback);
+
         }
 
       } else {
@@ -52,7 +83,6 @@ Mk.Animatable = Em.Mixin.create({
         fn = function( me ) {
           me.$().css(properties);
         }
-
 
       }
 
@@ -63,7 +93,6 @@ Mk.Animatable = Em.Mixin.create({
     var item = Mk.Animation.create({
       options: options,
       fn: animation,
-      callback: callback,
       view: this
     });
     Mk.AnimationManager.push( item );

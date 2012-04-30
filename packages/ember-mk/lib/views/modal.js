@@ -93,13 +93,10 @@ Mk.ModalView = Ember.Mixin.create(Mk.Animatable, {
       var val = ( this._isHorizontalAnimation() ) ? {x: position}:{y: position};
       var self = this;
 
-      this.animate({duration: this.duration, stopEventHandling: this.stopEventHandling}, val, function(me) {
+      this.animate({duration: this.duration, stopEventHandling: this.stopEventHandling}, val, function() {
 
-        if ( fn ) fn(me);
-
-
+        if ( fn ) fn();
         self.set('isVisibleModal', position === 0 );
-                 
                  
       });
       this.set('position', position);

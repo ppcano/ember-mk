@@ -2,9 +2,8 @@
 require("ember-mk/core");
 
 Mk.Animation = Em.Object.extend({
-  options: null, //{duration, delay, stopEventHandling, immediately}}  
+  options: null, //{duration, stopEventHandling, immediately}}  
   fn: null,
-  callback: null, 
   view: null, 
 
   init: function(){
