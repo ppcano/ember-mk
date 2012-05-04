@@ -26,7 +26,7 @@ Mk.ScrollWrapper = Ember.Mixin.create({
       
       elementHeight = (typeof item === 'number')?item:$('#'+item).height();
 
-      ember_assert('scroll wrapper mixin (' + item + ') not found ', !!elementHeight);
+      Em.assert('scroll wrapper mixin (' + item + ') not found ', !!elementHeight);
 
       elementHeights+=elementHeight;
 
