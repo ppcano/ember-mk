@@ -9,7 +9,9 @@ The main idea behind:
 
 # Features
 
-  - Modal, Swipe, Scroll, Navigation and Tab Views.
+  - Modal, Swipe *( stable )*.
+
+	- Scroll , Navigation and Tab Views *(unstable)*
 
   - PresenterView: manage application flow presenting animated views,
     building a chain of PresenterViews. 
@@ -27,7 +29,7 @@ Import the js and css files to your project. Also include jquery.transit.js on y
 
 ##Packages
 
-As well as, jquery and ember, the project requires [sproutcore/ember-touch](https://github.com/ppcano/sproutcore-touch)
+As well as, jquery and ember, the project requires [sproutcore/ember-touch](https://github.com/emberjs-addons/sproutcore-touch)
 
 If you want to test against other ember/jquery/ember-touchs version, deployed the js on the examples/assets directory.
 
@@ -50,7 +52,3 @@ Current configuration of the Assetfile supports:
     rake-pipeline-web-filters (0.6.0)
     rake-pipeline (0.6.0)
 
-
-##Unit Tests
-
-Still pending...

@@ -1,20 +1,4 @@
 
-.swipe_slider {
-  position: absolute; 
-  top: 0px; 
-  height: 100%; 
-  width: 100%;  
-	overflow: visible;
-}
-
-.swipe_item {
- /* -webkit-transform: translateZ(0);*/
-  -webkit-transform: translateZ(0);
-  position: absolute; 
-  top: 0px; 
-  height: 100%; 
-  width: 100%; 
-}
 
 
 .tab_pane {

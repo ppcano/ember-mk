@@ -1,5 +1,91 @@
+(function() {
 
-(function(exports) {
+/**
+  @class
+
+  Manage the states of no-simulataneosly views. 
+
+  TODO: 
+    - the initialization/destroy process must be improved.
+    suggested based on Application cycle. 
+
+  @extends Em.Object
+*/
+Em.AppGestureManager = Em.Object.create({
+
+  _isBlocked: false,
+
+
+  /*
+  Assign the view which has blocked the recognizer, in order
+  that view can be the only one which can unblock the recognizer. 
+  */
+  _blockerView: null,
+
+
+  isBlocked: Em.computed(function(){
+
+    return this.get('_isBlocked');
+
+  }).property('_isBlocked'),
+
+  wasBlockedBy: function ( view ) {
+
+    return view === this.get('_blockerView');
+
+  },
+
+
+  block: function( view ) {
+
+    if ( this.get('isBlocked') ) {
+      throw Error('manager has already blocked the gesture recognizer');
+    }
+
+
+    if (  view.get('simultaneosly') ) {
+      // Em.assert
+      throw Error('a view with simultaneosly property true, cannot block the gesture recognizer');
+    }
+
+    this.set('_isBlocked', true);
+    this.set('_blockerView', view);
+
+  },
+
+  unblock: function( view ) {
+
+    if ( !this.get('isBlocked') ) {
+      throw Error('unblock, the gesture recognizer when the recognizer was not blocked. Did you unblock after Start? ');
+    }
+
+    if (  view.get('simultaneosly') ) { // Em.assert
+      throw Error('a view with simultaneosly property true, cannot unblock the gesture recognizer');
+    }
+
+    var blockerView = this.get('_blockerView');
+
+    if ( view !== blockerView ) {
+      throw Error('unblock a view which was not the one which blocked the gesture recognizer');
+    }
+    this.set('_isBlocked', false);
+
+  },
+
+  restart: function() {
+
+    this.set('_isBlocked', false);
+    this.set('_blockerView', null);
+
+  }
+
+});
+
+})();
+
+
+
+(function() {
 // ==========================================================================
 // Project:  Ember Touch
 // Copyright: ©2011 Strobe Inc. and contributors.
@@ -68,103 +154,16 @@ Em.Gestures = Em.Object.create(
 });
 
 
-})({});
+})();
 
 
-(function(exports) {
 
-/**
-  @class
-
-  Manage the states of no-simulataneosly views. 
-
-  TODO: 
-    - the initialization/destroy process must be improved.
-    suggested based on Application cycle. 
-
-  @extends Em.Object
-*/
-Em.AppGestureManager = Em.Object.create({
-
-  _isBlocked: false,
-
-
-  /*
-  Assign the view which has blocked the recognizer, in order
-  that view can be the only one which can unblock the recognizer. 
-  */
-  _blockerView: null,
-
-
-  isBlocked: Em.computed(function(){
-
-    return this.get('_isBlocked');
-
-  }).property('_isBlocked'),
-
-  wasBlockedBy: function ( view ) {
-
-    return view === this.get('_blockerView');
-
-  },
-
-
-  block: function( view ) {
-
-    if ( this.get('isBlocked') ) {
-      throw Error('manager has already blocked the gesture recognizer');
-    }
-
-
-    if (  view.get('simultaneosly') ) {
-      // ember_assert
-      throw Error('a view with simultaneosly property true, cannot block the gesture recognizer');
-    }
-
-    this.set('_isBlocked', true);
-    this.set('_blockerView', view);
-
-  },
-
-  unblock: function( view ) {
-
-    if ( !this.get('isBlocked') ) {
-      throw Error('unblock, the gesture recognizer when the recognizer was not blocked. Did you unblock after Start? ');
-    }
-
-    if (  view.get('simultaneosly') ) { // ember_assert
-      throw Error('a view with simultaneosly property true, cannot unblock the gesture recognizer');
-    }
-
-    var blockerView = this.get('_blockerView');
-
-    if ( view !== blockerView ) {
-      throw Error('unblock a view which was not the one which blocked the gesture recognizer');
-    }
-    this.set('_isBlocked', false);
-
-  },
-
-  restart: function() {
-
-    this.set('_isBlocked', false);
-    this.set('_blockerView', null);
-
-  }
-
-});
-
-})({});
-
-
-(function(exports) {
+(function() {
 // ==========================================================================
 // Project:  Ember Touch 
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-
-
 var get = Em.get;
 var set = Em.set;
 
@@ -284,10 +283,11 @@ Em.GestureManager = Em.Object.extend({
 
 });
 
-})({});
+})();
 
 
-(function(exports) {
+
+(function() {
 // ==========================================================================
 // Project:  Ember Touch
 // Copyright: ©2011 Strobe Inc. and contributors.
@@ -376,18 +376,16 @@ Em.TouchList = Em.Object.extend({
 
 });
 
-})({});
+})();
 
 
-(function(exports) {
+
+(function() {
 // ==========================================================================
 // Project:  Ember Touch 
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-
-
-
 var get = Em.get;
 var set = Em.set;
 
@@ -624,7 +622,7 @@ Em.Gesture = Em.Object.extend(
 
     if (!delegate && delegateName ) {
       var delegate = Em.GestureDelegates.find(delegateName);
-      ember_assert('empty delegate, attempting to set up delegate based on delegateName', delegate);
+      Em.assert('empty delegate, attempting to set up delegate based on delegateName', delegate);
       this.set('delegate', delegate);
     }
 
@@ -1035,16 +1033,181 @@ Em.Gesture.CANCELLED = 5;
 //  testing directions on pan and swipe gestures
 //  LifeCycle of Em.AppGestureManager
 
-})({});
+})();
 
 
-(function(exports) {
+
+(function() {
 // ==========================================================================
 // Project:  Ember Touch 
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+
+Em.GestureDelegates = Em.Object.create({
+
+  _delegates: {},
+
+  add: function(delegate) {
+    this._delegates[ delegate.get('name') ] = delegate;
+  },
+
+  find: function( name ) {
+    return this._delegates[name];
+  },
+
+  clear: function() {
+    this._delegates = {};
+  }
+
+
+});
+
+
+
+})();
+
+
+
+(function() {
+// ==========================================================================
+// Project:  Ember Touch 
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+/*
+ Delegate implements the logic of your application's gesture-recognition behavior.
+ Set up your gestures to use a GestureDelegate to coordinate the gesture recognition based 
+ on the current status of your Application. 
+ */
+Em.GestureDelegate = Em.Object.extend({
+
+  /*
+  * Name of the gestureDelegate.
+	* It will be used on gestureOptions to assign a gestureDelegate to a specific gesture.
+  */
+  name: null,
+
+  init: function(){
+    this._super();
+  },
+
+	/*
+  Ask the delegate if a gesture recognizer should receive a touch event.
+  */
+  shouldReceiveTouch: function(gesture, view, event) {
+    return true; 
+  }
+
+
+});
+
+
+})();
+
+
+
+(function() {
+// ==========================================================================
+// Project:  Ember Touch
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var get = Em.get;
+var set = Em.set;
+
+/** 
+  @class
+  
+  Extends Em.View by making the init method gesture-aware.
+
+  @extends Em.Object
+*/
+Em.View.reopen(
+/** @scope Em.View.prototype */{
+
+  /**
+    The Em.GestureManager instance which will manager the gestures of the view.    
+    This object is automatically created and set at init-time.
+
+    @default null
+    @type Array
+  */
+  eventManager: null,
+
+  /**
+    Inspects the properties on the view instance and create gestures if they're 
+    used.
+  */
+  init: function() {
+    this._super();
+
+    var knownGestures = Em.Gestures.knownGestures();
+    var eventManager = get(this, 'eventManager');
+
+    if (knownGestures && !eventManager) {
+      var gestures = [];
+
+      var manager = Em.GestureManager.create({
+        appGestureManager: Em.AppGestureManager
+      });
+
+
+      for (var gesture in knownGestures) {
+        if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
+
+          var optionsHash;
+          if (this[gesture+'Options'] !== undefined && typeof this[gesture+'Options'] === 'object') {
+            optionsHash = this[gesture+'Options'];
+          } else {
+            optionsHash = {};
+          }
+
+          optionsHash.name = gesture;
+          optionsHash.view = this;
+          optionsHash.manager = manager;
+
+          gestures.push(knownGestures[gesture].create(optionsHash));
+        }
+      }
+      
+
+      set(manager, 'view', this);
+      set(manager, 'gestures', gestures);
+
+      set(this, 'eventManager', manager);
+ 
+    }
+  },
+
+  unblockGestureRecognizer: function() {
+
+    var eventManager = get(this, 'eventManager');
+    eventManager.appGestureManager.unblock(this);
+
+  }
+
+});
+
+
+})();
+
+
+
+(function() {
+
+})();
+
+
+
+(function() {
+// ==========================================================================
+// Project:  Ember Touch 
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
 var get = Em.get;
 var set = Em.set;
 
@@ -1175,16 +1338,16 @@ Em.PinchGestureRecognizer = Em.Gesture.extend({
 
 Em.Gestures.register('pinch', Em.PinchGestureRecognizer);
 
-})({});
+})();
 
 
-(function(exports) {
+
+(function() {
 // ==========================================================================
 // Project:  Ember Touch 
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-
 var get = Em.get;
 var set = Em.set;
 var x = 0;
@@ -1331,16 +1494,16 @@ Em.PanGestureRecognizer = Em.Gesture.extend({
 
 Em.Gestures.register('pan', Em.PanGestureRecognizer);
 
-})({});
+})();
 
 
-(function(exports) {
+
+(function() {
 // ==========================================================================
 // Project:  Ember Touch 
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-
 var get = Em.get;
 var set = Em.set;
 
@@ -1418,7 +1581,7 @@ Em.TapGestureRecognizer = Em.Gesture.extend({
   init: function(){
     this._super();
     this._internalTouches = Em.TouchList.create(); 
-    ember_assert( get(this, 'numberOfRequiredTouches')===1, 'TODO: still not prepared for higher number' );
+    Em.assert( get(this, 'numberOfRequiredTouches')===1, 'TODO: still not prepared for higher number' );
   },
 
   shouldBegin: function() {
@@ -1497,11 +1660,11 @@ Em.TapGestureRecognizer = Em.Gesture.extend({
 Em.Gestures.register('tap', Em.TapGestureRecognizer);
 
 
-})({});
+})();
 
 
-(function(exports) {
 
+(function() {
 var get = Em.get;
 var set = Em.set;
 
@@ -1624,11 +1787,11 @@ Em.PressGestureRecognizer = Em.Gesture.extend({
 Em.Gestures.register('press', Em.PressGestureRecognizer);
 
 
-})({});
+})();
 
 
-(function(exports) {
 
+(function() {
 var get = Em.get;
 var set = Em.set;
 
@@ -1776,11 +1939,11 @@ Em.TouchHoldGestureRecognizer = Em.Gesture.extend({
 Em.Gestures.register('touchHold', Em.TouchHoldGestureRecognizer);
 
 
-})({});
+})();
 
 
-(function(exports) {
 
+(function() {
 var get = Em.get; var set = Em.set;
 
 /**
@@ -1992,189 +2155,18 @@ Em.SwipeGestureRecognizer = Em.Gesture.extend({
 Em.Gestures.register('swipe', Em.SwipeGestureRecognizer);
 
 
-})({});
+})();
 
 
-(function(exports) {
 
+(function() {
 
+})();
 
 
 
-
-})({});
-
-
-(function(exports) {
-// ==========================================================================
-// Project:  Ember Touch 
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-
-Em.GestureDelegates = Em.Object.create({
-
-  _delegates: {},
-
-  add: function(delegate) {
-    this._delegates[ delegate.get('name') ] = delegate;
-  },
-
-  find: function( name ) {
-    return this._delegates[name];
-  },
-
-  clear: function() {
-    this._delegates = {};
-  }
-
-
-});
-
-
-
-})({});
-
-
-(function(exports) {
-// ==========================================================================
-// Project:  Ember Touch 
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-/*
- Delegate implements the logic of your application's gesture-recognition behavior.
- Set up your gestures to use a GestureDelegate to coordinate the gesture recognition based 
- on the current status of your Application. 
- */
-Em.GestureDelegate = Em.Object.extend({
-
-  /*
-  * Name of the gestureDelegate.
-	* It will be used on gestureOptions to assign a gestureDelegate to a specific gesture.
-  */
-  name: null,
-
-  init: function(){
-    this._super();
-  },
-
-	/*
-  Ask the delegate if a gesture recognizer should receive a touch event.
-  */
-  shouldReceiveTouch: function(gesture, view, event) {
-    return true; 
-  }
-
-
-});
-
-
-})({});
-
-
-(function(exports) {
-// ==========================================================================
-// Project:  Ember Touch
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-var get = Em.get;
-var set = Em.set;
-
-/** 
-  @class
-  
-  Extends Em.View by making the init method gesture-aware.
-
-  @extends Em.Object
-*/
-Em.View.reopen(
-/** @scope Em.View.prototype */{
-
-  /**
-    The Em.GestureManager instance which will manager the gestures of the view.    
-    This object is automatically created and set at init-time.
-
-    @default null
-    @type Array
-  */
-  eventManager: null,
-
-  /**
-    Inspects the properties on the view instance and create gestures if they're 
-    used.
-  */
-  init: function() {
-    this._super();
-
-    var knownGestures = Em.Gestures.knownGestures();
-    var eventManager = get(this, 'eventManager');
-
-    if (knownGestures && !eventManager) {
-      var gestures = [];
-
-      var manager = Em.GestureManager.create({
-        appGestureManager: Em.AppGestureManager
-      });
-
-
-      for (var gesture in knownGestures) {
-        if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
-
-          var optionsHash;
-          if (this[gesture+'Options'] !== undefined && typeof this[gesture+'Options'] === 'object') {
-            optionsHash = this[gesture+'Options'];
-          } else {
-            optionsHash = {};
-          }
-
-          optionsHash.name = gesture;
-          optionsHash.view = this;
-          optionsHash.manager = manager;
-
-          gestures.push(knownGestures[gesture].create(optionsHash));
-        }
-      }
-      
-
-      set(manager, 'view', this);
-      set(manager, 'gestures', gestures);
-
-      set(this, 'eventManager', manager);
- 
-    }
-  },
-
-  unblockGestureRecognizer: function() {
-
-    var eventManager = get(this, 'eventManager');
-    eventManager.appGestureManager.unblock(this);
-
-  }
-
-});
-
-
-})({});
-
-
-(function(exports) {
-
-
-
-
-
-
-
-})({});
-
-
-(function(exports) {
+(function() {
 //require('ember-views');
 
+})();
 
-})({});

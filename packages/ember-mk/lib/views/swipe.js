@@ -4,232 +4,214 @@ require("ember-mk/mixins/animatable");
 
 var get = Ember.get , set = Ember.set, setPath = Ember.setPath, getPath = Ember.getPath;
 
-/* Based on SwipeView approach of Matteo Spinelli
- */
+// Based on SwipeView approach of Matteo Spinelli
 Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
   
   itemViewClass: Em.View,
 
-  /**
-    Defines the item based that will be shown at startup based on index content. 
-
-    @type Integer
-    @default 0
-  */
   contentIndex: 0,
-
-  content: null,
-
   duration: 500,
-  content: null,
 
 	swipeOptions: {
 		direction: Em.OneGestureDirection.Left | Em.OneGestureDirection.Right,
 		cancelPeriod: 100,
-    simultaneously: false,
+		simultaneously: true,
 		swipeThreshold: 20,
 		initThreshold: 10
 	},
+
+  width: 320,
+  selected: null,
+  content: null,
+
   //--- private properties
-  
   isMoving: false,
-  classNames: ['swipe_slider'],
-  width: null,
-  translatePosition: null,
+  translatePosition: 0,
 
 	activeIndex: null,
 	activeLeftCss: null,
+
 
   init: function(){
 
     this._super();
 
-    var view, index;
+		var itemViewClass = this.get('itemViewClass');
 
+		if (Em.typeOf(itemViewClass) === "string") {
+			itemViewClass = Em.getPath(itemViewClass);
+			set(this, 'itemViewClass', itemViewClass);
+		}
 
-    var itemViewClass = get(this, 'itemViewClass');
-    if (Em.typeOf(itemViewClass) === "string") {
-      itemViewClass = Em.getPath(itemViewClass);
-      set(this, 'itemViewClass', itemViewClass);
-    }
-
-    //TODO: handlebars contentBinding is not working....
-    var content  = get(this, 'content');
+		var content = get(this, 'content');
     if (Em.typeOf(content) === "string") {
       content = Em.getPath(content);
       set(this, 'content', content);
     }
 
 
-    var contentIndex = get(this, 'contentIndex'); 
-    
-    index = this._getContentIndex(false); 
+		var self = this;
+			
+		['-100%', '0%', '100%'].forEach(function(item) {
 
-    view = this.createChildView(itemViewClass, {
-      classNames: ['swipe_item'],
-      content: content[index]
-    });
+			var view = self.createChildView(itemViewClass, {});
+			self.get('childViews').pushObject(view);
+			view.on('didInsertElement', function() {
+				view.$().css("left", item); 
+			});
 
-
-    this._appendView(view);
-
-    index = contentIndex;
-
-    view = this.createChildView(itemViewClass, {
-      classNames: ['swipe_item'],
-      content: content[index]
-    });
-    this._appendView(view);
-
-
-    index = this._getContentIndex(true); 
-
-    view = this.createChildView(itemViewClass, {
-      classNames: ['swipe_item'],
-      content: content[index]
-    });
-    this._appendView(view);
-
+		});
 
   },
 
-  didInsertElement: function() {
+	_reorderContent: function() {
 
-    var child = this.get('childViews');
+		var content = this.get('content');
+		var selected = this.get('selected');
 
-    set(this, 'activeLeftCss', 0);
-    set(this, 'activeIndex', 1);
+		if ( !!content && !!selected ) {
 
-    child[0].$().css("left", "-100%"); 
-    child[1].$().css("left", "0%"); 
-    child[2].$().css("left", "100%"); 
+			var i = content.get('length'), 
+				isSelectedInContent = false;
 
-    var width = this.$().width();   
-    set(this, 'width', width);
-    set(this, 'translatePosition', 0);
+			// content.some does not work, why?
+			while( !isSelectedInContent && i-- ) {
+				isSelectedInContent = (content.objectAt(i) === selected);
+			}
 
-  },
+			if ( isSelectedInContent ) {
+
+				if ( !this.get('isMoving') ) {
+
+					this.set('contentIndex', i );
+					this.set('activeIndex', 1 );
+					this.set('activeLeftCss', 0);
+					this.set('translatePosition', 0);
+
+					var contentIndex = this.get('contentIndex'),
+							index = this.get('activeIndex'),
+							tmpIndex,
+							tmpContentIndex,
+							child = this.get('childViews');
+
+					tmpContentIndex = this._getContentIndex(false); 
+					tmpIndex = this._getIndex(false); 
+					child[tmpIndex].set('content', content.objectAt(tmpContentIndex) );
+
+					child[index].set('content', content.objectAt(contentIndex) );
+
+					tmpContentIndex = this._getContentIndex(true); 
+					tmpIndex = this._getIndex(true); 
+					child[tmpIndex].set('content', content.objectAt(tmpContentIndex) );
+
+
+				} else {
+
+					this.set('isMoving', false);
+
+				}
+
+			}
+
+		}
+
+	},
+
+
+
+	swipeEnd: function(recognizer) {
+
+			
+    var length = this.getPath('content.length');
+
+		if ( length > 1 ) {
+
+			var self = this;
+			if ( recognizer.swipeDirection === Em.OneGestureDirection.Left ) {
+					this.moveNext( function() {
+						//self.unblockGestureRecognizer();
+					});
+
+			} else if ( recognizer.swipeDirection === Em.OneGestureDirection.Right ) {
+
+					this.moveBack( function() {
+						//self.unblockGestureRecognizer();
+					});
+
+			}
+
+		}
+
+	},
 
 	moveBack: function(fn){
-
-    if ( !this.get('isMoving') ) {
-
-      this.set('isMoving', true );
-      this.set('activeIndex', this._getIndex(false) );
-      this.set('contentIndex', this._getContentIndex(false) );
-
-      var activeLeftCss= this.get('activeLeftCss');
-      activeLeftCss +=-1;
-      this.set('activeLeftCss', activeLeftCss);
-
-      var that = this;
-      // if after callback, user can click several times
-      this.move(false, function() { 
-
-        that.set('isMoving', false );
-        if ( fn ) fn();
-
-      });
-    }
-
+		this._move(false, fn);
 	},
 
 	moveNext: function(fn){
+		this._move(true, fn);
+	},
+
+
+  _move: function(next, fn) {
 
     if ( !this.get('isMoving') ) {
 
-      this.set('isMoving', true );
-      this.set('activeIndex', this._getIndex(true) );
-      this.set('contentIndex', this._getContentIndex(true) );
+				// it will be updated on setup content index
+				this.set('isMoving', true );
 
-      var activeLeftCss= this.get('activeLeftCss');
-      activeLeftCss +=1;
-      this.set('activeLeftCss', activeLeftCss);
+        var self = this;
 
-      var that = this;
-      this.move(true, function() { 
-      
-        that.set('isMoving', false );
-        if ( fn ) fn();
+				var activeLeftCss= this.get('activeLeftCss');
+				activeLeftCss = ( next )  ? activeLeftCss+1 : activeLeftCss-1;
+				this.set('activeLeftCss', activeLeftCss);
 
-      });
-    }
-	},
+				this.set('contentIndex', this._getContentIndex(next) );
+				this.set('activeIndex', this._getIndex(next) );
 
-	swipeStart: function(recognizer) {
-    //console.log('swipe start.....');
-	},
+				var width = this.get('width');
+				var translatePosition = this.get('translatePosition');
+				translatePosition += (next) ? width*(-1): width;
 
-	swipeChange: function(recognizer) {
-     
-    //console.log('swipe change.....');
+				this.animate( {duration: this.duration, stopEventHandling:true}, {x: translatePosition}, function() {
 
-	},
+						var left, leftIndex, rightIndex, leftContentIndex, rightContentIndex, contentIndex;
 
-	swipeCancel: function(recognizer) {
+						var activeLeftCss = self.get('activeLeftCss');
 
-    //console.log('swipe cancel.....'); 
-    this.unblockGestureRecognizer();
+						var child = self.get('childViews');
+						var content = self.get('content');
 
-	},
+						leftIndex = self._getIndex(false);
 
-	swipeEnd: function(recognizer) {
-     
-    //console.log('swipe end.....'); 
-
-    var that = this;
-    if ( recognizer.swipeDirection === Em.OneGestureDirection.Left ) {
-        this.moveNext( function() {
-          that.unblockGestureRecognizer();
-        });
-
-    } else if ( recognizer.swipeDirection === Em.OneGestureDirection.Right ) {
-
-        this.moveBack( function() {
-          that.unblockGestureRecognizer();
-        });
-
-    }
-
-	},
-
-  move: function(next, fn) {
-
-		var width = this.get('width');
-
-    var translatePosition = this.get('translatePosition');
-		translatePosition += (next) ? width*(-1): width;
-
-    this.animate({duration: this.duration, stopEventHandling:true},{x: translatePosition}, function(me) {
-
-        var activeLeftCss = me.get('activeLeftCss');
-        var left, leftIndex, rightIndex, leftContentIndex, rightContentIndex;
-
-        var child = me.get('childViews');
-        var content = me.get('content');
-
-        leftIndex = me._getIndex(false);
-        rightIndex = me._getIndex(true);
-
-        left = (activeLeftCss-1)*100+'%';
-        child[leftIndex].$().css("left", left); 
-
-        left = (activeLeftCss+1)*100+'%';
-        child[rightIndex].$().css("left", left); 
-
-        leftContentIndex = me._getContentIndex(false);
-        rightContentIndex = me._getContentIndex(true);
-
-        set( child[leftIndex], 'content', content[leftContentIndex] );
-        set( child[rightIndex], 'content', content[rightContentIndex] );
-
-        set(me, 'translatePosition', translatePosition);
-        if ( fn ) {
-          fn();
-        }
+						rightIndex = self._getIndex(true);
 
 
-    });
+						leftContentIndex = self._getContentIndex(false);
+						contentIndex = self.get('contentIndex');
+						rightContentIndex = self._getContentIndex(true);
+
+						left = (activeLeftCss-1)*100+'%';
+						child[leftIndex].$().css("left", left); 
+
+						left = (activeLeftCss+1)*100+'%';
+						child[rightIndex].$().css("left", left); 
+
+						child[leftIndex].set('content', content.objectAt(leftContentIndex) );
+						child[rightIndex].set('content', content.objectAt(rightContentIndex) );
+
+
+						self.set('translatePosition', translatePosition);
+
+
+
+						if ( fn ) fn();
+
+            //console.log( content.objectAt(contentIndex) );
+            self.set('selected', content.objectAt(contentIndex) );
+
+				});
+		}
 
   },
 
@@ -249,7 +231,7 @@ Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
 
   _getContentIndex: function( next ) {
 
-    var length = this.get('content').get('length');
+    var length = this.getPath('content.length');
 		var result = this.get('contentIndex');
     result +=(next) ? 1:-1; 
 
@@ -262,14 +244,19 @@ Mk.SwipeView = Ember.ContainerView.extend(Mk.Animatable,{
     return result;
   },
 
-	_appendView: function(newView) {
 
-    var child = this.get('childViews');
-    set(newView, '_parentView', this);
-    child.pushObject(newView);
+	_contentChanged: Ember.observer( function() {
 
-	}
+		this._reorderContent();
+
+	}, 'content'),
+
+	_selectedChanged: Ember.observer( function() {
+
+		this._reorderContent();
+
+	}, 'selected')
+
 
 
 });
-

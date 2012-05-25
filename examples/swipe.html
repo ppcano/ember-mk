@@ -13,12 +13,10 @@
     <script type="text/javascript" src="assets/jquery-1.7.1.js"></script>
     <script type="text/javascript" src="assets/jquery.transit.js"></script>
 
-    <script type="text/javascript" src="assets/ember.js"></script>
+    <script type="text/javascript" src="assets/ember-0.9.8.1.js"></script>
     <script type="text/javascript" src="assets/ember-touch.js"></script>
 
-    <link rel="stylesheet" href="source/ember-mk.css" type="text/css" media="screen">
     <script type="text/javascript" src="source/ember-mk.js"></script>
-    <script type="text/javascript" src="source/ember-mk-tests.js"></script>
 
 
     <script type="text/javascript">
@@ -29,32 +27,33 @@
 
     <style type="text/css" media="all">
 
-      .greenbg{
-        background-color:green; 
-      }
+			.mk_swipe_slider {
+				position: absolute; 
+				top: 0px; 
+				height: 100%; 
+				width: 100%;  
+				overflow: visible;
+			}
 
-      .sw_content {
-        position: relative; 
-      }
+			.mk_swipe_slider > div {
+			 /* -webkit-transform: translateZ(0);*/
+				-webkit-transform: translateZ(0);
+				position: absolute; 
+				top: 0px; 
+				height: 100%; 
+				width: 100%; 
 
-      .sw_photo {
+				background-color:red; 
+			}
 
-        position: relative; 
-        left: 10%;
-        width: 80%;  
 
-        background-color:red; 
+			.mk_swipe_slider > div.is-green {
 
-      }
+				background-color:green; 
 
-      .sw_info {
+			}
 
-        position: relative; 
-        left: 10%;
-        width: 80%;  
-        background-color:blue; 
 
-      }
 
 
 
@@ -72,7 +71,6 @@
 
     <script type="text/x-handlebars">
 			{{#view App.SwipeView 
-					content="swipe_items" 
 					itemViewClass="App.SwipeItemView" }}
 			{{/view}}
     </script>
@@ -86,72 +84,47 @@
 
 minispade.require('ember-mk/main');
 
-var swipe_items = [];
-swipe_items.push( Em.Object.create( {green: true} ) );
-swipe_items.push( Em.Object.create( {green: false} ) );
-swipe_items.push( Em.Object.create( {green: true} ) );
-swipe_items.push( Em.Object.create( {green: false} ) );
-swipe_items.push( Em.Object.create( {green: true} ) );
-swipe_items.push( Em.Object.create( {green: false} ) );
+var items = Ember.A([]);
+items.pushObject( Em.Object.create( {value: 'hola1', green: true} ) );
+items.pushObject( Em.Object.create( {value: 'hola2', green: false} ) );
+items.pushObject( Em.Object.create( {value: 'hola3', green: true} ) );
+items.pushObject( Em.Object.create( {value: 'hola4', green: false} ) );
+items.pushObject( Em.Object.create( {value: 'hola5', green: true} ) );
+items.pushObject( Em.Object.create( {value: 'hola6', green: false} ) );
+
 
 
 App = Em.Application.create({
 });
 
 
+App.arrayController = Em.ArrayController.create({
+	content: items,
+	selected: items.get('firstObject')
+});
+
+
 App.SwipeView = Mk.SwipeView.extend({
+
+	classNames: ['mk_swipe_slider'],
+	width: 768, // for ipad
+	contentBinding: 'App.arrayController.content', 
+	selectedBinding: 'App.arrayController.selected'
 
 });
 
-App.SwipeItemView = Em.ContainerView.extend({
-  classNameBindings: ['greenbg'],
-  childViews: ['child'],
+App.SwipeItemView = Em.View.extend({
+	classNames: ['my_swipe_item_view'],
+  classNameBindings: ['isGreen'],
 
-  greenbg: Ember.computed(function() {
+  isGreen: Ember.computed(function() {
 
     var content = this.get('content');
     return (content) ? content.get('green'): false;
     
-  }).property('content.green'),
+		}).property('content.green'),
 
-  child: Em.ContainerView.extend( Mk.ScrollMixin, Mk.ScalableMixin,  {
-
-    scrollOptions: {
-      hScroll: false,
-      vScroll: true,
-      duration: 750,
-      velocity: 0.02,
-      simultaneously: false,
-      initThreshold: 10
-    },
-
-    margin_top: 0.05,
-    classNames: ['sw_content'],
-    childViews: ['photo', 'info1', 'info2'],
-
-    photo: Em.View.extend(Mk.ScalableMixin, {
-      height: 0.8,
-      classNames: ['sw_photo']
-
-    }),
-
-    info1: Em.View.extend(Mk.ScalableMixin, {
-
-      margin_top: 0.05,
-      height: 0.2,
-      classNames: ['sw_info']
-
-    }),
-
-    info2: Em.View.extend(Mk.ScalableMixin, {
-
-      margin_top: 0.05,
-      height: 0.2,
-      classNames: ['sw_info']
-
-    })
-
-  })
+	template: Em.Handlebars.compile('{{content.value}}')
 
 });
 
